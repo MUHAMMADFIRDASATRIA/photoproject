@@ -1,0 +1,19 @@
+{
+  "name": "photobox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Photobox - Hybrid Kiosk & Cloud Dashboard System",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:kiosk": "npm run dev -w apps/kiosk",
+    "dev:dashboard": "npm run dev -w apps/web-dashboard",
+    "dev:api-local": "npm run dev -w apps/api-local",
+    "dev:api-cloud": "npm run dev -w apps/api-cloud",
+    "build:kiosk": "npm run build -w apps/kiosk",
+    "build:dashboard": "npm run build -w apps/web-dashboard",
+    "build:shared": "npm run build -w packages/shared"
+  }
+}

@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+apps/api-local/prisma/*.db
+apps/api-cloud/prisma/*.db
+
+# Electron
+release/
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo

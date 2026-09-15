@@ -1,0 +1,250 @@
+// Prisma Schema — Photobox (Local Database)
+// Sesuai CLAUDE.md §5: Konvensi Skema Database
+// Setiap tabel operasional WAJIB punya branch_id
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// RBAC
+// ============================================================
+
+model Branch {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String    @default("")
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  users        User[]
+  frames       Frame[]
+  frameDesigns FrameDesign[]
+  transactions Transaction[]
+  photos       Photo[]
+  devices      Device[]
+  activityLogs ActivityLog[]
+  syncQueue    SyncQueue[]
+  uploadQueue  UploadQueue[]
+
+  @@map("branches")
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String           @default("")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  code        String           @unique
+  description String           @default("")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int        @map("role_id")
+  permissionId Int        @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ============================================================
+// Users & Devices
+// ============================================================
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  roleId    Int       @map("role_id")
+  branchId  Int?      @map("branch_id") // null untuk superadmin
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  role         Role          @relation(fields: [roleId], references: [id])
+  branch       Branch?       @relation(fields: [branchId], references: [id])
+  activityLogs ActivityLog[]
+
+  @@map("users")
+}
+
+model Device {
+  id        Int      @id @default(autoincrement())
+  name      String
+  branchId  Int      @map("branch_id")
+  isActive  Boolean  @default(true)
+  lastSeen  DateTime? @map("last_seen")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("devices")
+}
+
+// ============================================================
+// Frames (Bentuk / Tipe) & Frame Designs (Artwork / Tema)
+// ============================================================
+
+model Frame {
+  id           Int           @id @default(autoincrement())
+  branchId     Int?          @map("branch_id") // null jika master frame global, atau specific per cabang
+  name         String        // "Photo Strip 2x3", "Grid 4-Cut 4R"
+  code         String        @unique // "strip_3", "grid_4"
+  width        Int           // Lebar kanvas cetak (px)
+  height       Int           // Tinggi kanvas cetak (px)
+  photoCount   Int           @map("photo_count") // Jumlah jepretan/slot foto
+  slotsConfig  Json          @map("slots_config") // [{ x, y, width, height, rotation }]
+  price        Int           // Harga dasar (dalam rupiah)
+  thumbnailUrl String?       @map("thumbnail_url")
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  branch       Branch?       @relation(fields: [branchId], references: [id])
+  designs      FrameDesign[]
+  transactions Transaction[]
+
+  @@map("frames")
+}
+
+model FrameDesign {
+  id            Int           @id @default(autoincrement())
+  branchId      Int?          @map("branch_id") // null = untuk semua cabang
+  frameId       Int           @map("frame_id")
+  name          String        // "Vintage Aesthetic", "Y2K Neon", "Cute Pastel"
+  overlayUrl    String        @map("overlay_url") // PNG Transparan (border, logo, dekorasi)
+  backgroundUrl String?       @map("background_url") // Gambar background layer (opsional)
+  bgColorHex    String?       @default("#FFFFFF") @map("bg_color_hex")
+  thumbnailUrl  String        @map("thumbnail_url") // Preview pilihan di kiosk
+  priceOverride Int?          @map("price_override") // Jika tema ini punya harga beda
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  branch       Branch?       @relation(fields: [branchId], references: [id])
+  frame        Frame         @relation(fields: [frameId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("frame_designs")
+}
+
+model Transaction {
+  id            Int          @id @default(autoincrement())
+  branchId      Int          @map("branch_id")
+  frameId       Int          @map("frame_id")
+  designId      Int          @map("design_id")
+  amount        Int          // dalam rupiah
+  copies        Int          @default(1) // jumlah lembar cetak
+  paymentMethod String       @default("qris") @map("payment_method")
+  paymentStatus String       @default("pending") @map("payment_status") // pending, paid, failed, expired
+  status        String       @default("created") // created, paid, capturing, printing, completed, failed
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  branch Branch      @relation(fields: [branchId], references: [id])
+  frame  Frame       @relation(fields: [frameId], references: [id])
+  design FrameDesign @relation(fields: [designId], references: [id])
+  photos Photo[]
+
+  @@map("transactions")
+}
+
+model Photo {
+  id            Int      @id @default(autoincrement())
+  transactionId Int      @map("transaction_id")
+  branchId      Int      @map("branch_id")
+  kind          String   @default("composite") // composite (frame/grid) atau single (foto per pose)
+  slotIndex     Int?     @map("slot_index") // nomor pose (1-based), null untuk komposit
+  localPath     String   @map("local_path")
+  cloudUrl      String?  @map("cloud_url")
+  uploadStatus  String   @default("pending") @map("upload_status") // pending, uploading, uploaded, failed
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transaction Transaction  @relation(fields: [transactionId], references: [id])
+  branch      Branch       @relation(fields: [branchId], references: [id])
+  uploadQueue UploadQueue[]
+
+  @@map("photos")
+}
+
+// ============================================================
+// Activity Log (CLAUDE.md §5: wajib untuk aksi sensitif)
+// ============================================================
+
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  branchId   Int?     @map("branch_id")
+  action     String   // e.g., 'create', 'update', 'delete'
+  resource   String   // e.g., 'frame', 'user', 'role'
+  resourceId Int?     @map("resource_id")
+  details    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id])
+  branch Branch? @relation(fields: [branchId], references: [id])
+
+  @@map("activity_logs")
+}
+
+// ============================================================
+// Sync & Upload Queues (CLAUDE.md §2: queue-based, retry)
+// ============================================================
+
+model SyncQueue {
+  id         Int      @id @default(autoincrement())
+  branchId   Int      @map("branch_id")
+  tableName  String   @map("table_name")
+  recordId   Int      @map("record_id")
+  operation  String   // create, update, delete
+  payload    Json
+  status     String   @default("pending") // pending, syncing, synced, failed
+  retryCount Int      @default(0) @map("retry_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("sync_queue")
+}
+
+model UploadQueue {
+  id         Int      @id @default(autoincrement())
+  photoId    Int      @map("photo_id")
+  branchId   Int      @map("branch_id")
+  filePath   String   @map("file_path")
+  status     String   @default("pending") // pending, uploading, uploaded, failed
+  retryCount Int      @default(0) @map("retry_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  photo  Photo  @relation(fields: [photoId], references: [id])
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@map("upload_queue")
+}
