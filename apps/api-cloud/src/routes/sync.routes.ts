@@ -1,12 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { SETTINGS_KEYS } from '@photobox/shared';
 
 export const syncRouter = Router();
 
 /**
  * GET /api/sync/catalog
- * Endpoint sinkronisasi katalog untuk mesin Kiosk (frames & designs)
- * Mengembalikan master frame dan desain artwork aktif untuk cabang tertentu + global (semua cabang)
+ * Endpoint sinkronisasi katalog untuk mesin Kiosk (frames, designs & settings)
+ * Mengembalikan master frame, desain artwork aktif, dan pengaturan cabang untuk
+ * cabang tertentu + global (semua cabang)
  */
 syncRouter.get('/catalog', async (req: Request, res: Response) => {
   try {
@@ -21,13 +23,24 @@ syncRouter.get('/catalog', async (req: Request, res: Response) => {
       designsWhere.OR = [{ branchId: branchScope }, { branchId: null }];
     }
 
-    const [frames, designs] = await Promise.all([
+    const settingsWhere: any = {
+      key: { in: Object.values(SETTINGS_KEYS) },
+    };
+    if (branchScope) {
+      settingsWhere.OR = [{ branchId: branchScope }, { branchId: null }];
+    }
+
+    const [frames, designs, settings] = await Promise.all([
       prisma.frame.findMany({
         where: framesWhere,
         orderBy: { id: 'asc' },
       }),
       prisma.frameDesign.findMany({
         where: designsWhere,
+        orderBy: { id: 'asc' },
+      }),
+      prisma.branchSetting.findMany({
+        where: settingsWhere,
         orderBy: { id: 'asc' },
       }),
     ]);
@@ -37,6 +50,7 @@ syncRouter.get('/catalog', async (req: Request, res: Response) => {
       data: {
         frames,
         designs,
+        settings,
         syncedAt: new Date(),
       },
     });

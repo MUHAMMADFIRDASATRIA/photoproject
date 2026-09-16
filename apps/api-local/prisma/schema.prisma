@@ -30,11 +30,26 @@ model Branch {
   transactions Transaction[]
   photos       Photo[]
   devices      Device[]
+  settings     BranchSetting[]
   activityLogs ActivityLog[]
   syncQueue    SyncQueue[]
   uploadQueue  UploadQueue[]
 
   @@map("branches")
+}
+
+model BranchSetting {
+  id        Int      @id @default(autoincrement())
+  branchId  Int?     @map("branch_id") // null = default global (semua cabang)
+  key       String
+  value     Json     // contoh: { "photoSessionTimeoutMinutes": 5 }
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  branch Branch? @relation(fields: [branchId], references: [id])
+
+  @@unique([branchId, key])
+  @@map("branch_settings")
 }
 
 model Role {
@@ -144,6 +159,8 @@ model FrameDesign {
   bgColorHex    String?       @default("#FFFFFF") @map("bg_color_hex")
   thumbnailUrl  String        @map("thumbnail_url") // Preview pilihan di kiosk
   priceOverride Int?          @map("price_override") // Jika tema ini punya harga beda
+  slotBorderColor String?     @map("slot_border_color") // Warna garis pinggir slot foto (opsional)
+  slotBorderWidth Int?        @map("slot_border_width") // Ketebalan garis pinggir slot foto dalam px (opsional)
   isActive      Boolean       @default(true)
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -159,7 +176,7 @@ model Transaction {
   id            Int          @id @default(autoincrement())
   branchId      Int          @map("branch_id")
   frameId       Int          @map("frame_id")
-  designId      Int          @map("design_id")
+  designId      Int?         @map("design_id") // dipilih setelah pembayaran lunas
   amount        Int          // dalam rupiah
   copies        Int          @default(1) // jumlah lembar cetak
   paymentMethod String       @default("qris") @map("payment_method")
@@ -170,7 +187,7 @@ model Transaction {
 
   branch Branch      @relation(fields: [branchId], references: [id])
   frame  Frame       @relation(fields: [frameId], references: [id])
-  design FrameDesign @relation(fields: [designId], references: [id])
+  design FrameDesign? @relation(fields: [designId], references: [id])
   photos Photo[]
 
   @@map("transactions")

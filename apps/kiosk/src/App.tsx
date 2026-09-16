@@ -6,7 +6,6 @@ import { SelectFrameScreen } from './components/SelectFrameScreen';
 import { SelectDesignScreen } from './components/SelectDesignScreen';
 import { PaymentScreen } from './components/PaymentScreen';
 import { CameraCaptureScreen } from './components/CameraCaptureScreen';
-import { PrintingScreen } from './components/PrintingScreen';
 import { ResultScreen } from './components/ResultScreen';
 
 function App() {
@@ -30,8 +29,6 @@ function App() {
       return <PaymentScreen />;
     case 'CAPTURE':
       return <CameraCaptureScreen />;
-    case 'PRINTING':
-      return <PrintingScreen />;
     case 'RESULT':
       return <ResultScreen />;
     default:

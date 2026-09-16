@@ -74,12 +74,12 @@ export const SelectFrameScreen: React.FC = () => {
             <div className="h-8 w-8 animate-spin rounded-full border-3 border-indigo-500 border-t-transparent"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-3xl border border-zinc-800/60 bg-zinc-900/20 p-6 [scrollbar-width:thin] [scrollbar-color:#52525b_#18181b]">
             {frames.map((frame) => (
               <div
                 key={frame.id}
                 onClick={() => selectFrame(frame)}
-                className="group relative cursor-pointer overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-8 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:border-indigo-500/60 hover:bg-zinc-900/90 hover:scale-[1.02] active:scale-[0.99]"
+                className="group relative w-[440px] shrink-0 cursor-pointer snap-start overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-8 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:border-indigo-500/60 hover:bg-zinc-900/90 hover:scale-[1.02] active:scale-[0.99]"
               >
                 {/* Glow on hover */}
                 <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-indigo-600/10 blur-[80px] group-hover:bg-indigo-600/25 transition-all"></div>
@@ -146,7 +146,7 @@ export const SelectFrameScreen: React.FC = () => {
 
       {/* Footer Info */}
       <div className="text-center text-xs text-zinc-500">
-        Sentuh salah satu bentuk frame untuk lanjut ke pembayaran (QRIS)
+        Geser ke samping untuk melihat semua pilihan, lalu sentuh bentuk frame untuk lanjut ke pembayaran (QRIS)
       </div>
     </div>
   );

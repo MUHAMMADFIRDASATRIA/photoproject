@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { api } from '../lib/api';
+import { composePhoto } from '../lib/compose';
+import { isDesktop } from '../lib/desktop';
 
 export type KioskStep =
   | 'DEVICE_LOGIN'
@@ -8,7 +10,6 @@ export type KioskStep =
   | 'SELECT_DESIGN'
   | 'PAYMENT'
   | 'CAPTURE'
-  | 'PRINTING'
   | 'RESULT';
 
 export interface DeviceInfo {
@@ -40,6 +41,8 @@ export interface DesignItem {
   bgColorHex?: string | null;
   thumbnailUrl: string;
   priceOverride?: number | null;
+  slotBorderColor?: string | null;
+  slotBorderWidth?: number | null;
 }
 
 export interface TransactionInfo {
@@ -68,6 +71,9 @@ interface KioskState {
   printCopies: number;
   finalCompositeUrl: string | null;
   downloadUrl: string | null;
+  photoSessionMinutes: number | null;
+  sessionDeadline: number | null;
+  timerExpired: boolean;
 
   // Actions
   setStep: (step: KioskStep) => void;
@@ -76,6 +82,7 @@ interface KioskState {
   logoutDevice: () => void;
   initDevice: () => void;
   fetchFrames: () => Promise<void>;
+  fetchSettings: () => Promise<void>;
   fetchDesignsForFrame: (frameId: number) => Promise<void>;
   selectFrame: (frame: FrameItem) => void;
   selectDesign: (design: DesignItem) => void;
@@ -88,9 +95,28 @@ interface KioskState {
   cancelRetake: () => void;
   resetCustomerSession: () => void;
   completeTransaction: (compositeDataUrl: string, photos?: string[]) => Promise<void>;
+  finalizeSession: () => Promise<void>;
+  startSessionTimer: () => void;
+  stopSessionTimer: () => void;
 }
 
-export const useKioskStore = create<KioskState>((set, get) => ({
+export const useKioskStore = create<KioskState>((set, get) => {
+  // Watcher batas waktu sesi foto: berjalan tiap detik selama ada deadline.
+  // Saat waktu habis → langsung finalisasi (tetap lanjut ke halaman hasil).
+  setInterval(() => {
+    const { sessionDeadline, timerExpired, currentStep } = get();
+    if (!sessionDeadline || timerExpired) return;
+    if (Date.now() >= sessionDeadline) {
+      if (currentStep === 'RESULT') {
+        set({ sessionDeadline: null });
+        return;
+      }
+      set({ timerExpired: true, sessionDeadline: null });
+      void get().finalizeSession();
+    }
+  }, 1000);
+
+  return {
   device: null,
   currentStep: 'DEVICE_LOGIN',
   frames: [],
@@ -103,6 +129,9 @@ export const useKioskStore = create<KioskState>((set, get) => ({
   printCopies: 1,
   finalCompositeUrl: null,
   downloadUrl: null,
+  photoSessionMinutes: null,
+  sessionDeadline: null,
+  timerExpired: false,
 
   setStep: (step) => set({ currentStep: step }),
   setPrintCopies: (copies) => set({ printCopies: Math.max(1, copies) }),
@@ -116,6 +145,7 @@ export const useKioskStore = create<KioskState>((set, get) => ({
         currentStep: 'STANDBY',
       });
       get().fetchFrames();
+      get().fetchSettings();
     } else {
       set({ currentStep: 'DEVICE_LOGIN' });
     }
@@ -133,6 +163,7 @@ export const useKioskStore = create<KioskState>((set, get) => ({
           currentStep: 'STANDBY',
         });
         get().fetchFrames();
+        get().fetchSettings();
         return true;
       }
       return false;
@@ -166,6 +197,29 @@ export const useKioskStore = create<KioskState>((set, get) => ({
     } catch (e) {
       console.error('Fetch frames error:', e);
     }
+  },
+
+  fetchSettings: async () => {
+    try {
+      const res = await api.get('/settings');
+      if (res.data.success && res.data.data?.photoSessionTimeoutMinutes) {
+        set({ photoSessionMinutes: res.data.data.photoSessionTimeoutMinutes });
+      }
+    } catch (e) {
+      console.error('Fetch settings error:', e);
+    }
+  },
+
+  startSessionTimer: () => {
+    const minutes = get().photoSessionMinutes ?? 5;
+    set({
+      sessionDeadline: Date.now() + minutes * 60 * 1000,
+      timerExpired: false,
+    });
+  },
+
+  stopSessionTimer: () => {
+    set({ sessionDeadline: null });
   },
 
   fetchDesignsForFrame: async (frameId: number) => {
@@ -242,6 +296,7 @@ export const useKioskStore = create<KioskState>((set, get) => ({
           },
           currentStep: 'SELECT_DESIGN',
         });
+        get().startSessionTimer();
         return true;
       }
       return false;
@@ -317,6 +372,38 @@ export const useKioskStore = create<KioskState>((set, get) => ({
     }
   },
 
+  /**
+   * Menyelesaikan sesi tanpa layar cetak: komposisi foto otomatis,
+   * simpan ke backend, lalu langsung ke halaman hasil (QR). Cetak fisik
+   * dikirim ke printer secara otomatis (non-blocking, best-effort).
+   * Bisa dipanggil dengan 0 foto (mis. karena waktu sesi habis) —
+   * komposisi tetap dibuat dari background + overlay desain saja.
+   */
+  finalizeSession: async () => {
+    const { selectedFrame, selectedDesign, capturedPhotos, printCopies } = get();
+    if (!selectedFrame || !selectedDesign) return;
+
+    const composed = await composePhoto(selectedFrame, selectedDesign, capturedPhotos);
+    if (!composed) return;
+
+    // Simpan ke backend & arahkan ke halaman hasil / QR
+    await get().completeTransaction(composed.dataUrl, capturedPhotos);
+
+    // Cetak otomatis ke printer fisik (tidak memblokir alur pengguna)
+    if (isDesktop()) {
+      try {
+        await window.photoboxDesktop!.printPhoto({
+          dataUrl: composed.dataUrl,
+          width: composed.width,
+          height: composed.height,
+          copies: printCopies,
+        });
+      } catch (e) {
+        console.error('Auto print error:', e);
+      }
+    }
+  },
+
   resetCustomerSession: () => {
     set({
       currentStep: 'STANDBY',
@@ -327,6 +414,9 @@ export const useKioskStore = create<KioskState>((set, get) => ({
       printCopies: 1,
       finalCompositeUrl: null,
       downloadUrl: null,
+      sessionDeadline: null,
+      timerExpired: false,
     });
   },
-}));
+  };
+});

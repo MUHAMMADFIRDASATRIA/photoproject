@@ -25,6 +25,57 @@ const getSlotIndex = (el: any): number => {
 /* ─── live readout type ──────────────────────────────── */
 interface LiveInfo { i: number; x: number; y: number; w: number; h: number; rot: number; radius: number }
 
+/* ─── numeric input (nilai diketik bebas, commit saat blur/Enter) ─── */
+interface NumInputProps {
+  label: string;
+  value: number;
+  onCommit: (v: number) => void;
+  min?: number;
+  max?: number;
+  suffix?: string;
+  disabled?: boolean;
+  width?: string;
+}
+
+const NumInput: React.FC<NumInputProps> = ({
+  label, value, onCommit, min, max, suffix, disabled, width = 'w-20',
+}) => {
+  const [text, setText] = useState(String(value));
+
+  useEffect(() => {
+    setText(String(value));
+  }, [value]);
+
+  const commit = () => {
+    let v = Number(text);
+    if (!Number.isFinite(v)) {
+      setText(String(value));
+      return;
+    }
+    v = Math.round(v);
+    if (min !== undefined) v = Math.max(min, v);
+    if (max !== undefined) v = Math.min(max, v);
+    setText(String(v));
+    onCommit(v);
+  };
+
+  return (
+    <label className={`flex items-center gap-1.5 text-[11px] text-zinc-400 ${disabled ? 'opacity-40' : ''}`}>
+      <span className="whitespace-nowrap">{label}</span>
+      <input
+        type="number"
+        value={text}
+        disabled={disabled}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+        className={`${width} rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-200 outline-none focus:border-indigo-500 disabled:opacity-40`}
+      />
+      {suffix && <span className="text-[10px] text-zinc-500">{suffix}</span>}
+    </label>
+  );
+};
+
 /* ─── component ─────────────────────────────────────── */
 export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, onChange, onSelectChange, onDuplicate }) => {
   const [selected, setSelected] = useState(-1);
@@ -296,6 +347,18 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
       ? { i: selected, x: selectedSlot.x, y: selectedSlot.y, w: selectedSlot.width, h: selectedSlot.height, rot: selectedSlot.rotation || 0, radius: selectedSlot.radius ?? 10 }
       : null;
 
+  /* ── panduan tengah (muncul saat drag mendekati tengah kanvas) ── */
+  // liveInfo dalam ukuran kanvas aktual (px @frame), bandingkan dengan pusat kanvas aktual.
+  const cw = width || 1;
+  const ch = height || 1;
+  const centerTol = 6 / Math.max(0.001, scale); // ~6px tampilan, dikonversi ke px aktual
+  const guideX = liveInfo
+    ? Math.abs(liveInfo.x + liveInfo.w / 2 - cw / 2) <= centerTol
+    : false;
+  const guideY = liveInfo
+    ? Math.abs(liveInfo.y + liveInfo.h / 2 - ch / 2) <= centerTol
+    : false;
+
   /* ================================================================
      JSX
      ================================================================ */
@@ -337,18 +400,6 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
             Kunci Rasio
           </label>
 
-          <label className="flex items-center gap-1.5 text-[11px] text-zinc-400">
-            <span>R-Sudut</span>
-            <input
-              type="number" min={0} max={999}
-              value={display?.radius ?? 10}
-              disabled={selected < 0}
-              onChange={(e) => selected >= 0 && updateSlot(selected, { radius: clamp(Number(e.target.value) || 0, 0, 999) })}
-              className="w-16 rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-200 outline-none focus:border-indigo-500 disabled:opacity-40"
-            />
-            <span className="text-[10px] text-zinc-500">px</span>
-          </label>
-
           <button
             type="button"
             disabled={selected < 0 || !selectedSlot?.rotation}
@@ -358,6 +409,63 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
             ↺ Reset Rotasi
           </button>
         </div>
+      </div>
+
+      {/* ── inspector: posisi & ukuran slot (diketik manual) ── */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">Posisi &amp; Ukuran</span>
+        <NumInput
+          label="X"
+          value={selectedSlot?.x ?? 0}
+          min={0}
+          max={Math.max(0, width - (selectedSlot?.width ?? 0))}
+          disabled={selected < 0}
+          onCommit={(v) => selected >= 0 && updateSlot(selected, { x: v })}
+        />
+        <NumInput
+          label="Y"
+          value={selectedSlot?.y ?? 0}
+          min={0}
+          max={Math.max(0, height - (selectedSlot?.height ?? 0))}
+          disabled={selected < 0}
+          onCommit={(v) => selected >= 0 && updateSlot(selected, { y: v })}
+        />
+        <NumInput
+          label="Lebar"
+          value={selectedSlot?.width ?? 0}
+          min={MIN_SLOT}
+          max={Math.max(MIN_SLOT, width)}
+          disabled={selected < 0}
+          suffix="px"
+          onCommit={(v) => selected >= 0 && updateSlot(selected, { width: v })}
+        />
+        <NumInput
+          label="Tinggi"
+          value={selectedSlot?.height ?? 0}
+          min={MIN_SLOT}
+          max={Math.max(MIN_SLOT, height)}
+          disabled={selected < 0}
+          suffix="px"
+          onCommit={(v) => selected >= 0 && updateSlot(selected, { height: v })}
+        />
+        <NumInput
+          label="Rotasi"
+          value={selectedSlot?.rotation ?? 0}
+          min={-360}
+          max={360}
+          disabled={selected < 0}
+          suffix="°"
+          onCommit={(v) => selected >= 0 && updateSlot(selected, { rotation: v })}
+        />
+        <NumInput
+          label="Radius"
+          value={selectedSlot?.radius ?? 10}
+          min={0}
+          max={999}
+          disabled={selected < 0}
+          suffix="px"
+          onCommit={(v) => selected >= 0 && updateSlot(selected, { radius: v })}
+        />
       </div>
 
       {/* ── canvas + sidebar preview ─────────────────── */}
@@ -374,6 +482,22 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
           }}
           onMouseDown={() => handleSelect(-1)}
         >
+          {/* panduan sumbu tengah kanvas saat slot mendekati pusat */}
+          {guideX && (
+            <div className="pointer-events-none absolute inset-y-0 left-1/2 z-[15] -translate-x-1/2 w-px bg-amber-300/80 shadow-[0_0_6px_rgba(252,211,77,0.6)]">
+              <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded bg-amber-400/90 px-1.5 py-0.5 text-[9px] font-bold text-zinc-900 shadow">
+                ↔ Tengah
+              </span>
+            </div>
+          )}
+          {guideY && (
+            <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[15] -translate-y-1/2 h-px bg-amber-300/80 shadow-[0_0_6px_rgba(252,211,77,0.6)]">
+              <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded bg-amber-400/90 px-1.5 py-0.5 text-[9px] font-bold text-zinc-900 shadow">
+                ↕ Tengah
+              </span>
+            </div>
+          )}
+
           {slots.map((s, i) => (
             <Fragment key={i}>
               <div

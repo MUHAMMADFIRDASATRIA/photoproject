@@ -41,18 +41,33 @@ interface DesignItem {
   bgColorHex: string | null;
   thumbnailUrl: string;
   priceOverride: number | null;
+  slotBorderColor?: string | null;
+  slotBorderWidth?: number | null;
   isActive: boolean;
   updatedAt: string;
   branch?: BranchOption | null;
   frame: FrameOption;
 }
 
-const emptyForm = {
+interface DesignForm {
+  name: string;
+  branchId: string;
+  frameId: string;
+  backgroundUrl: string;
+  bgColorHex: string;
+  slotBorderColor: string | null;
+  slotBorderWidth: number | null;
+  isActive: boolean;
+}
+
+const emptyForm: DesignForm = {
   name: '',
   branchId: '',
   frameId: '',
   backgroundUrl: '',
   bgColorHex: '#FFFFFF',
+  slotBorderColor: '#EF4444',
+  slotBorderWidth: 2,
   isActive: true,
 };
 
@@ -65,15 +80,21 @@ function resolveImageUrl(url: string | null | undefined): string | null {
 }
 
 // ─── Mockup Preview ─────────────────────────────────────────
-/** Render komposit desain: artwork/background + slot foto sesuai posisi&rotasi asli frame. */
+/** Render komposit desain: artwork/background + slot foto sesuai posisi&rotasi asli frame + overlay. */
 function FrameDesignMockup({
   frame,
   backgroundUrl,
   bgColorHex,
+  overlayUrl,
+  slotBorderColor,
+  slotBorderWidth,
 }: {
   frame?: FrameOption | null;
   backgroundUrl?: string | null;
   bgColorHex?: string | null;
+  overlayUrl?: string | null;
+  slotBorderColor?: string | null;
+  slotBorderWidth?: number | null;
 }) {
   const width = frame?.width ?? 600;
   const height = frame?.height ?? 1050;
@@ -82,6 +103,7 @@ function FrameDesignMockup({
       ? frame.slotsConfig
       : [{ x: 0, y: 0, width, height, rotation: 0, radius: 0 }];
   const resolvedBg = resolveImageUrl(backgroundUrl);
+  const resolvedOverlay = resolveImageUrl(overlayUrl);
   // perkiraan 1px-frame ≈ 0.16px tampilan (kanvas ~360x480 di card/preview)
   const scale = 100 / Math.min(width, height);
 
@@ -98,7 +120,7 @@ function FrameDesignMockup({
       {slots.map((s, i) => (
         <div
           key={i}
-          className="absolute flex flex-col items-center justify-center gap-1 bg-zinc-400/85 border border-zinc-500/50 shadow-inner overflow-hidden"
+          className="absolute flex flex-col items-center justify-center gap-1 bg-zinc-400/85 shadow-inner overflow-hidden"
           style={{
             left: `${(s.x / width) * 100}%`,
             top: `${(s.y / height) * 100}%`,
@@ -106,6 +128,11 @@ function FrameDesignMockup({
             height: `${(s.height / height) * 100}%`,
             transform: s.rotation ? `rotate(${s.rotation}deg)` : undefined,
             borderRadius: (s.radius ?? 0) * scale,
+            border: `${
+              slotBorderWidth != null && slotBorderWidth > 0
+                ? `${slotBorderWidth * (2 * scale)}px solid ${slotBorderColor || '#EF4444'}`
+                : '1px solid rgb(113 113 122 / 0.5)'
+            }`,
           }}
         >
           <span className="text-[10px] font-bold text-zinc-700 opacity-70">{i + 1}</span>
@@ -114,6 +141,18 @@ function FrameDesignMockup({
           </span>
         </div>
       ))}
+
+      {/* Overlay artwork — digambar di atas slot (sama seperti komposisi asli saat cetak) */}
+      {resolvedOverlay && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: `url(${resolvedOverlay})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -189,6 +228,8 @@ export const DesignsPage: React.FC = () => {
       frameId: String(design.frameId),
       backgroundUrl: design.backgroundUrl ?? '',
       bgColorHex: design.bgColorHex ?? '#FFFFFF',
+      slotBorderColor: design.slotBorderColor ?? '#EF4444',
+      slotBorderWidth: design.slotBorderWidth ?? 2,
       isActive: design.isActive,
     });
     setLocalPreview(null);
@@ -252,6 +293,8 @@ export const DesignsPage: React.FC = () => {
       frameId: Number(form.frameId),
       backgroundUrl: form.backgroundUrl ? form.backgroundUrl.trim() : null,
       bgColorHex: form.bgColorHex || '#FFFFFF',
+      slotBorderColor: form.slotBorderColor ? form.slotBorderColor.trim() : null,
+      slotBorderWidth: form.slotBorderWidth == null || form.slotBorderWidth <= 0 ? null : Math.min(20, Number(form.slotBorderWidth)),
       isActive: form.isActive,
     };
 
@@ -324,9 +367,6 @@ export const DesignsPage: React.FC = () => {
       return matchesSearch && matchesStatus && matchesFrame && matchesBranch;
     });
   }, [designs, frameFilter, search, statusFilter, branchFilter]);
-
-  // Gambar yang ditampilkan di preview mockup (prioritas: local preview > uploaded URL)
-  const previewBgUrl = localPreview || form.backgroundUrl || null;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -416,6 +456,9 @@ export const DesignsPage: React.FC = () => {
                   frame={design.frame}
                   backgroundUrl={design.backgroundUrl}
                   bgColorHex={design.bgColorHex}
+                  overlayUrl={design.overlayUrl}
+                  slotBorderColor={design.slotBorderColor}
+                  slotBorderWidth={design.slotBorderWidth}
                 />
 
                 <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1.5">
@@ -606,7 +649,7 @@ export const DesignsPage: React.FC = () => {
                           {isUploading ? 'Mengunggah...' : 'Klik untuk pilih gambar'}
                         </p>
                         <p className="mt-1 text-[10px] text-zinc-600">
-                          PNG, JPG, atau WEBP • Maks 10 MB
+                          PNG, JPG, atau WEBP • Maks 20 MB
                         </p>
                       </div>
                     </button>
@@ -639,6 +682,46 @@ export const DesignsPage: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Border slot foto: warna + ketebalan garis keliling slot */}
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-zinc-400">
+                      Warna Garis Slot
+                      <span className="ml-1 text-[10px] font-normal text-zinc-600">(opsional)</span>
+                    </label>
+                    <div className="flex rounded-xl border border-zinc-800 bg-zinc-950 p-1">
+                      <input
+                        type="color"
+                        value={form.slotBorderColor || '#EF4444'}
+                        onChange={(event) => setForm({ ...form, slotBorderColor: event.target.value })}
+                        className="h-8 w-10 shrink-0 rounded-lg border-0 bg-transparent cursor-pointer"
+                      />
+                      <input
+                        value={form.slotBorderColor || ''}
+                        onChange={(event) => setForm({ ...form, slotBorderColor: event.target.value })}
+                        placeholder="#EF4444"
+                        className="min-w-0 flex-1 bg-transparent px-2 text-xs text-white outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-zinc-400">
+                      Tebal Garis Slot (px)
+                      <span className="ml-1 text-[10px] font-normal text-zinc-600">0 = tanpa garis</span>
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={form.slotBorderWidth == null ? '' : form.slotBorderWidth}
+                      onChange={(event) =>
+                        setForm({ ...form, slotBorderWidth: event.target.value === '' ? null : Number(event.target.value) })
+                      }
+                      placeholder="2"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-xs text-white outline-none focus:border-indigo-500/60"
+                    />
+                  </div>
+
                   <label className="flex items-center gap-2 self-end rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-xs text-zinc-300 cursor-pointer">
                     <input
                       type="checkbox"
@@ -657,8 +740,10 @@ export const DesignsPage: React.FC = () => {
                   <div className="aspect-[3/4] h-80 w-full bg-zinc-950 relative overflow-hidden">
                     <FrameDesignMockup
                       frame={selectedFrame}
-                      backgroundUrl={previewBgUrl}
                       bgColorHex={form.bgColorHex}
+                      overlayUrl={editingDesign?.overlayUrl ?? null}
+                      slotBorderColor={form.slotBorderColor}
+                      slotBorderWidth={form.slotBorderWidth}
                     />
                   </div>
                   <div className="space-y-1.5 p-4 text-xs">

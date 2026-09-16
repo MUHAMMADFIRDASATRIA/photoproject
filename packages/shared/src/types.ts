@@ -82,6 +82,8 @@ export interface FrameDesign {
   bgColorHex?: string | null; // Warna background default (e.g. #FFFFFF)
   thumbnailUrl: string; // Preview di layar kiosk
   priceOverride?: number | null; // Harga kustom (opsional)
+  slotBorderColor?: string | null; // Warna garis pinggir slot foto (opsional)
+  slotBorderWidth?: number | null; // Ketebalan garis pinggir slot foto dalam px (opsional)
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

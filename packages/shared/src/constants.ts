@@ -43,6 +43,9 @@ export const PERMISSIONS = {
   // Device management
   DEVICE_VIEW: 'device.view',
   DEVICE_MANAGE: 'device.manage',
+
+  // Settings / Konfigurasi
+  SETTING_MANAGE: 'setting.manage',
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -75,4 +78,16 @@ export const TRANSACTION_STATUS = {
   PRINTING: 'printing',
   COMPLETED: 'completed',
   FAILED: 'failed',
+} as const;
+
+// ============================================================
+// Pengaturan Cabang / Global (BranchSetting)
+// ============================================================
+
+export const SETTINGS_KEYS = {
+  PHOTO_SESSION_TIMEOUT_MINUTES: 'photo_session_timeout_minutes',
+} as const;
+
+export const SETTING_DEFAULTS = {
+  PHOTO_SESSION_TIMEOUT_MINUTES: 5,
 } as const;

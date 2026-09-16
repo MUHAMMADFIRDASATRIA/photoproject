@@ -130,6 +130,15 @@ exports.Prisma.BranchScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.BranchSettingScalarFieldEnum = {
+  id: 'id',
+  branchId: 'branchId',
+  key: 'key',
+  value: 'value',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -198,6 +207,8 @@ exports.Prisma.FrameDesignScalarFieldEnum = {
   bgColorHex: 'bgColorHex',
   thumbnailUrl: 'thumbnailUrl',
   priceOverride: 'priceOverride',
+  slotBorderColor: 'slotBorderColor',
+  slotBorderWidth: 'slotBorderWidth',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -276,20 +287,21 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
-};
-
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 
 exports.Prisma.ModelName = {
   Branch: 'Branch',
+  BranchSetting: 'BranchSetting',
   Role: 'Role',
   Permission: 'Permission',
   RolePermission: 'RolePermission',

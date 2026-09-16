@@ -15,6 +15,22 @@ export const PaymentScreen: React.FC = () => {
 
   const [isLoadingTx, setIsLoadingTx] = useState(false);
   const [countdown, setCountdown] = useState(180); // 3 menit waktu pembayaran
+  const [payError, setPayError] = useState<string | null>(null);
+
+  const handleConfirmPay = async () => {
+    setPayError(null);
+    if (!currentTransaction) {
+      const okCreate = await createTransaction();
+      if (!okCreate) {
+        setPayError('Transaksi gagal dibuat. Pastikan server kiosk aktif, lalu coba lagi.');
+        return;
+      }
+    }
+    const ok = await confirmPayment();
+    if (!ok) {
+      setPayError('Pembayaran gagal diproses. Pastikan server kiosk aktif, lalu coba lagi.');
+    }
+  };
 
   useEffect(() => {
     if (!currentTransaction) {
@@ -136,9 +152,20 @@ export const PaymentScreen: React.FC = () => {
 
               {/* Instant Simulator Button for Kiosk Testing */}
               <div className="space-y-2 pt-2">
+                {payError && (
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs font-semibold text-red-300">
+                    {payError}
+                  </div>
+                )}
+                {!currentTransaction && !isLoadingTx && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs font-semibold text-amber-300">
+                    Transaksi belum berhasil dibuat. Klik di bawah untuk mencoba membuat ulang.
+                  </div>
+                )}
                 <button
-                  onClick={() => confirmPayment()}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 py-4 text-sm font-bold text-white shadow-xl shadow-emerald-500/20 transition hover:brightness-110 active:scale-98"
+                  onClick={handleConfirmPay}
+                  disabled={isLoadingTx}
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 py-4 text-sm font-bold text-white shadow-xl shadow-emerald-500/20 transition hover:brightness-110 active:scale-98 disabled:opacity-50"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

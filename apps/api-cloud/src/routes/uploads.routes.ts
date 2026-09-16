@@ -26,10 +26,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Max 10 MB
+  limits: { fileSize: 20 * 1024 * 1024 }, // Max 20 MB
   fileFilter: (_req, file, cb) => {
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = ['.png', '.jpg', '.jpeg', '.webp'];
+    // Browser kadang mengirim mimetype generik (octet-stream) walau file-nya gambar
+    if (allowedTypes.includes(file.mimetype) || (file.mimetype === 'application/octet-stream' && allowedExts.includes(ext))) {
       cb(null, true);
     } else {
       cb(new Error('Hanya file gambar (PNG, JPG, WEBP) yang diperbolehkan.'));

@@ -11,6 +11,7 @@ import { framesRouter } from './routes/frames.routes';
 import { designsRouter } from './routes/designs.routes';
 import { uploadsRouter } from './routes/uploads.routes';
 import { syncRouter } from './routes/sync.routes';
+import { settingsRouter } from './routes/settings.routes';
 
 dotenv.config();
 
@@ -38,6 +39,26 @@ app.use('/api/frames', framesRouter);
 app.use('/api/designs', designsRouter);
 app.use('/api/uploads', uploadsRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/settings', settingsRouter);
+
+// Error handler: ubah error multer menjadi JSON agar frontend mendapat pesan jelas
+// (bukan HTML 500 standar Express yang membuat UI menampilkan pesan generik).
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (err?.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      res.status(413).json({ success: false, error: 'File terlalu besar. Maksimal ukuran file 20 MB.' });
+    } else {
+      res.status(400).json({ success: false, error: err.message });
+    }
+    return;
+  }
+  if (err?.message && String(err.message).startsWith('Hanya file gambar')) {
+    res.status(400).json({ success: false, error: err.message });
+    return;
+  }
+  console.error('Unhandled error:', err);
+  res.status(500).json({ success: false, error: 'Terjadi kesalahan server.' });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 [API Cloud] Running on http://localhost:${PORT}`);

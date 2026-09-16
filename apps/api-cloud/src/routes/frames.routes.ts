@@ -46,6 +46,38 @@ framesRouter.get('/', authenticateToken, checkPermission(PERMISSIONS.FRAME_VIEW)
 });
 
 /**
+ * GET /api/frames/:id
+ * Ambil detail 1 master frame berdasarkan ID
+ */
+framesRouter.get('/:id', authenticateToken, checkPermission(PERMISSIONS.FRAME_VIEW), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const branchScope = req.user?.branchId;
+
+    const frame = await prisma.frame.findFirst({
+      where: {
+        id,
+        ...(branchScope
+          ? { OR: [{ branchId: branchScope }, { branchId: null }] }
+          : {}),
+      },
+      include: {
+        branch: { select: { id: true, name: true } },
+      },
+    });
+
+    if (!frame) {
+      res.status(404).json({ success: false, error: 'Master frame tidak ditemukan atau Anda tidak memiliki akses.' });
+      return;
+    }
+
+    res.json({ success: true, data: frame });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Gagal memuat master frame.' });
+  }
+});
+
+/**
  * POST /api/frames
  * Membuat Master Frame baru
  * - Superadmin: bisa memilih cabang spesifik ATAU null (semua cabang)

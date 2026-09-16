@@ -239,8 +239,8 @@ dashboardRouter.get(
           recentTransactions: transactions.slice(0, 6).map((t) => ({
             id: t.id,
             frameName: t.frame.name,
-            designName: t.design.name,
-            designThumbnail: t.design.thumbnailUrl,
+            designName: t.design?.name ?? 'Belum pilih tema',
+            designThumbnail: t.design?.thumbnailUrl ?? null,
             amount: t.amount,
             paymentMethod: t.paymentMethod,
             paymentStatus: t.paymentStatus,

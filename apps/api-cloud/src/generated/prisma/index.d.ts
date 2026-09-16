@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Branch = $Result.DefaultSelection<Prisma.$BranchPayload>
 /**
+ * Model BranchSetting
+ * 
+ */
+export type BranchSetting = $Result.DefaultSelection<Prisma.$BranchSettingPayload>
+/**
  * Model Role
  * 
  */
@@ -196,6 +201,16 @@ export class PrismaClient<
     * ```
     */
   get branch(): Prisma.BranchDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.branchSetting`: Exposes CRUD operations for the **BranchSetting** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BranchSettings
+    * const branchSettings = await prisma.branchSetting.findMany()
+    * ```
+    */
+  get branchSetting(): Prisma.BranchSettingDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.role`: Exposes CRUD operations for the **Role** model.
@@ -738,6 +753,7 @@ export namespace Prisma {
 
   export const ModelName: {
     Branch: 'Branch',
+    BranchSetting: 'BranchSetting',
     Role: 'Role',
     Permission: 'Permission',
     RolePermission: 'RolePermission',
@@ -766,7 +782,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "branch" | "role" | "permission" | "rolePermission" | "user" | "device" | "frame" | "frameDesign" | "transaction" | "photo" | "activityLog"
+      modelProps: "branch" | "branchSetting" | "role" | "permission" | "rolePermission" | "user" | "device" | "frame" | "frameDesign" | "transaction" | "photo" | "activityLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -841,6 +857,80 @@ export namespace Prisma {
           count: {
             args: Prisma.BranchCountArgs<ExtArgs>
             result: $Utils.Optional<BranchCountAggregateOutputType> | number
+          }
+        }
+      }
+      BranchSetting: {
+        payload: Prisma.$BranchSettingPayload<ExtArgs>
+        fields: Prisma.BranchSettingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BranchSettingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BranchSettingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>
+          }
+          findFirst: {
+            args: Prisma.BranchSettingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BranchSettingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>
+          }
+          findMany: {
+            args: Prisma.BranchSettingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>[]
+          }
+          create: {
+            args: Prisma.BranchSettingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>
+          }
+          createMany: {
+            args: Prisma.BranchSettingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BranchSettingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>[]
+          }
+          delete: {
+            args: Prisma.BranchSettingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>
+          }
+          update: {
+            args: Prisma.BranchSettingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>
+          }
+          deleteMany: {
+            args: Prisma.BranchSettingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BranchSettingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BranchSettingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>[]
+          }
+          upsert: {
+            args: Prisma.BranchSettingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BranchSettingPayload>
+          }
+          aggregate: {
+            args: Prisma.BranchSettingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBranchSetting>
+          }
+          groupBy: {
+            args: Prisma.BranchSettingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BranchSettingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BranchSettingCountArgs<ExtArgs>
+            result: $Utils.Optional<BranchSettingCountAggregateOutputType> | number
           }
         }
       }
@@ -1681,6 +1771,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     branch?: BranchOmit
+    branchSetting?: BranchSettingOmit
     role?: RoleOmit
     permission?: PermissionOmit
     rolePermission?: RolePermissionOmit
@@ -1777,6 +1868,7 @@ export namespace Prisma {
     transactions: number
     photos: number
     devices: number
+    settings: number
     activityLogs: number
   }
 
@@ -1787,6 +1879,7 @@ export namespace Prisma {
     transactions?: boolean | BranchCountOutputTypeCountTransactionsArgs
     photos?: boolean | BranchCountOutputTypeCountPhotosArgs
     devices?: boolean | BranchCountOutputTypeCountDevicesArgs
+    settings?: boolean | BranchCountOutputTypeCountSettingsArgs
     activityLogs?: boolean | BranchCountOutputTypeCountActivityLogsArgs
   }
 
@@ -1841,6 +1934,13 @@ export namespace Prisma {
    */
   export type BranchCountOutputTypeCountDevicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DeviceWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountSettingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BranchSettingWhereInput
   }
 
   /**
@@ -2271,6 +2371,7 @@ export namespace Prisma {
     transactions?: boolean | Branch$transactionsArgs<ExtArgs>
     photos?: boolean | Branch$photosArgs<ExtArgs>
     devices?: boolean | Branch$devicesArgs<ExtArgs>
+    settings?: boolean | Branch$settingsArgs<ExtArgs>
     activityLogs?: boolean | Branch$activityLogsArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["branch"]>
@@ -2310,6 +2411,7 @@ export namespace Prisma {
     transactions?: boolean | Branch$transactionsArgs<ExtArgs>
     photos?: boolean | Branch$photosArgs<ExtArgs>
     devices?: boolean | Branch$devicesArgs<ExtArgs>
+    settings?: boolean | Branch$settingsArgs<ExtArgs>
     activityLogs?: boolean | Branch$activityLogsArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -2325,6 +2427,7 @@ export namespace Prisma {
       transactions: Prisma.$TransactionPayload<ExtArgs>[]
       photos: Prisma.$PhotoPayload<ExtArgs>[]
       devices: Prisma.$DevicePayload<ExtArgs>[]
+      settings: Prisma.$BranchSettingPayload<ExtArgs>[]
       activityLogs: Prisma.$ActivityLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -2734,6 +2837,7 @@ export namespace Prisma {
     transactions<T extends Branch$transactionsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     photos<T extends Branch$photosArgs<ExtArgs> = {}>(args?: Subset<T, Branch$photosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     devices<T extends Branch$devicesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    settings<T extends Branch$settingsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$settingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activityLogs<T extends Branch$activityLogsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$activityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3302,6 +3406,30 @@ export namespace Prisma {
   }
 
   /**
+   * Branch.settings
+   */
+  export type Branch$settingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    where?: BranchSettingWhereInput
+    orderBy?: BranchSettingOrderByWithRelationInput | BranchSettingOrderByWithRelationInput[]
+    cursor?: BranchSettingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BranchSettingScalarFieldEnum | BranchSettingScalarFieldEnum[]
+  }
+
+  /**
    * Branch.activityLogs
    */
   export type Branch$activityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3341,6 +3469,1130 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: BranchInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BranchSetting
+   */
+
+  export type AggregateBranchSetting = {
+    _count: BranchSettingCountAggregateOutputType | null
+    _avg: BranchSettingAvgAggregateOutputType | null
+    _sum: BranchSettingSumAggregateOutputType | null
+    _min: BranchSettingMinAggregateOutputType | null
+    _max: BranchSettingMaxAggregateOutputType | null
+  }
+
+  export type BranchSettingAvgAggregateOutputType = {
+    id: number | null
+    branchId: number | null
+  }
+
+  export type BranchSettingSumAggregateOutputType = {
+    id: number | null
+    branchId: number | null
+  }
+
+  export type BranchSettingMinAggregateOutputType = {
+    id: number | null
+    branchId: number | null
+    key: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BranchSettingMaxAggregateOutputType = {
+    id: number | null
+    branchId: number | null
+    key: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BranchSettingCountAggregateOutputType = {
+    id: number
+    branchId: number
+    key: number
+    value: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BranchSettingAvgAggregateInputType = {
+    id?: true
+    branchId?: true
+  }
+
+  export type BranchSettingSumAggregateInputType = {
+    id?: true
+    branchId?: true
+  }
+
+  export type BranchSettingMinAggregateInputType = {
+    id?: true
+    branchId?: true
+    key?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BranchSettingMaxAggregateInputType = {
+    id?: true
+    branchId?: true
+    key?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BranchSettingCountAggregateInputType = {
+    id?: true
+    branchId?: true
+    key?: true
+    value?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BranchSettingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BranchSetting to aggregate.
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BranchSettings to fetch.
+     */
+    orderBy?: BranchSettingOrderByWithRelationInput | BranchSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BranchSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BranchSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BranchSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BranchSettings
+    **/
+    _count?: true | BranchSettingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BranchSettingAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BranchSettingSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BranchSettingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BranchSettingMaxAggregateInputType
+  }
+
+  export type GetBranchSettingAggregateType<T extends BranchSettingAggregateArgs> = {
+        [P in keyof T & keyof AggregateBranchSetting]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBranchSetting[P]>
+      : GetScalarType<T[P], AggregateBranchSetting[P]>
+  }
+
+
+
+
+  export type BranchSettingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BranchSettingWhereInput
+    orderBy?: BranchSettingOrderByWithAggregationInput | BranchSettingOrderByWithAggregationInput[]
+    by: BranchSettingScalarFieldEnum[] | BranchSettingScalarFieldEnum
+    having?: BranchSettingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BranchSettingCountAggregateInputType | true
+    _avg?: BranchSettingAvgAggregateInputType
+    _sum?: BranchSettingSumAggregateInputType
+    _min?: BranchSettingMinAggregateInputType
+    _max?: BranchSettingMaxAggregateInputType
+  }
+
+  export type BranchSettingGroupByOutputType = {
+    id: number
+    branchId: number | null
+    key: string
+    value: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    _count: BranchSettingCountAggregateOutputType | null
+    _avg: BranchSettingAvgAggregateOutputType | null
+    _sum: BranchSettingSumAggregateOutputType | null
+    _min: BranchSettingMinAggregateOutputType | null
+    _max: BranchSettingMaxAggregateOutputType | null
+  }
+
+  type GetBranchSettingGroupByPayload<T extends BranchSettingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BranchSettingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BranchSettingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BranchSettingGroupByOutputType[P]>
+            : GetScalarType<T[P], BranchSettingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BranchSettingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    key?: boolean
+    value?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | BranchSetting$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["branchSetting"]>
+
+  export type BranchSettingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    key?: boolean
+    value?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | BranchSetting$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["branchSetting"]>
+
+  export type BranchSettingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    key?: boolean
+    value?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | BranchSetting$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["branchSetting"]>
+
+  export type BranchSettingSelectScalar = {
+    id?: boolean
+    branchId?: boolean
+    key?: boolean
+    value?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BranchSettingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "key" | "value" | "createdAt" | "updatedAt", ExtArgs["result"]["branchSetting"]>
+  export type BranchSettingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | BranchSetting$branchArgs<ExtArgs>
+  }
+  export type BranchSettingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | BranchSetting$branchArgs<ExtArgs>
+  }
+  export type BranchSettingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | BranchSetting$branchArgs<ExtArgs>
+  }
+
+  export type $BranchSettingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BranchSetting"
+    objects: {
+      branch: Prisma.$BranchPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      branchId: number | null
+      key: string
+      value: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["branchSetting"]>
+    composites: {}
+  }
+
+  type BranchSettingGetPayload<S extends boolean | null | undefined | BranchSettingDefaultArgs> = $Result.GetResult<Prisma.$BranchSettingPayload, S>
+
+  type BranchSettingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BranchSettingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BranchSettingCountAggregateInputType | true
+    }
+
+  export interface BranchSettingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BranchSetting'], meta: { name: 'BranchSetting' } }
+    /**
+     * Find zero or one BranchSetting that matches the filter.
+     * @param {BranchSettingFindUniqueArgs} args - Arguments to find a BranchSetting
+     * @example
+     * // Get one BranchSetting
+     * const branchSetting = await prisma.branchSetting.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BranchSettingFindUniqueArgs>(args: SelectSubset<T, BranchSettingFindUniqueArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BranchSetting that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BranchSettingFindUniqueOrThrowArgs} args - Arguments to find a BranchSetting
+     * @example
+     * // Get one BranchSetting
+     * const branchSetting = await prisma.branchSetting.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BranchSettingFindUniqueOrThrowArgs>(args: SelectSubset<T, BranchSettingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BranchSetting that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingFindFirstArgs} args - Arguments to find a BranchSetting
+     * @example
+     * // Get one BranchSetting
+     * const branchSetting = await prisma.branchSetting.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BranchSettingFindFirstArgs>(args?: SelectSubset<T, BranchSettingFindFirstArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BranchSetting that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingFindFirstOrThrowArgs} args - Arguments to find a BranchSetting
+     * @example
+     * // Get one BranchSetting
+     * const branchSetting = await prisma.branchSetting.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BranchSettingFindFirstOrThrowArgs>(args?: SelectSubset<T, BranchSettingFindFirstOrThrowArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BranchSettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BranchSettings
+     * const branchSettings = await prisma.branchSetting.findMany()
+     * 
+     * // Get first 10 BranchSettings
+     * const branchSettings = await prisma.branchSetting.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const branchSettingWithIdOnly = await prisma.branchSetting.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BranchSettingFindManyArgs>(args?: SelectSubset<T, BranchSettingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BranchSetting.
+     * @param {BranchSettingCreateArgs} args - Arguments to create a BranchSetting.
+     * @example
+     * // Create one BranchSetting
+     * const BranchSetting = await prisma.branchSetting.create({
+     *   data: {
+     *     // ... data to create a BranchSetting
+     *   }
+     * })
+     * 
+     */
+    create<T extends BranchSettingCreateArgs>(args: SelectSubset<T, BranchSettingCreateArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BranchSettings.
+     * @param {BranchSettingCreateManyArgs} args - Arguments to create many BranchSettings.
+     * @example
+     * // Create many BranchSettings
+     * const branchSetting = await prisma.branchSetting.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BranchSettingCreateManyArgs>(args?: SelectSubset<T, BranchSettingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BranchSettings and returns the data saved in the database.
+     * @param {BranchSettingCreateManyAndReturnArgs} args - Arguments to create many BranchSettings.
+     * @example
+     * // Create many BranchSettings
+     * const branchSetting = await prisma.branchSetting.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BranchSettings and only return the `id`
+     * const branchSettingWithIdOnly = await prisma.branchSetting.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BranchSettingCreateManyAndReturnArgs>(args?: SelectSubset<T, BranchSettingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BranchSetting.
+     * @param {BranchSettingDeleteArgs} args - Arguments to delete one BranchSetting.
+     * @example
+     * // Delete one BranchSetting
+     * const BranchSetting = await prisma.branchSetting.delete({
+     *   where: {
+     *     // ... filter to delete one BranchSetting
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BranchSettingDeleteArgs>(args: SelectSubset<T, BranchSettingDeleteArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BranchSetting.
+     * @param {BranchSettingUpdateArgs} args - Arguments to update one BranchSetting.
+     * @example
+     * // Update one BranchSetting
+     * const branchSetting = await prisma.branchSetting.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BranchSettingUpdateArgs>(args: SelectSubset<T, BranchSettingUpdateArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BranchSettings.
+     * @param {BranchSettingDeleteManyArgs} args - Arguments to filter BranchSettings to delete.
+     * @example
+     * // Delete a few BranchSettings
+     * const { count } = await prisma.branchSetting.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BranchSettingDeleteManyArgs>(args?: SelectSubset<T, BranchSettingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BranchSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BranchSettings
+     * const branchSetting = await prisma.branchSetting.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BranchSettingUpdateManyArgs>(args: SelectSubset<T, BranchSettingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BranchSettings and returns the data updated in the database.
+     * @param {BranchSettingUpdateManyAndReturnArgs} args - Arguments to update many BranchSettings.
+     * @example
+     * // Update many BranchSettings
+     * const branchSetting = await prisma.branchSetting.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BranchSettings and only return the `id`
+     * const branchSettingWithIdOnly = await prisma.branchSetting.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BranchSettingUpdateManyAndReturnArgs>(args: SelectSubset<T, BranchSettingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BranchSetting.
+     * @param {BranchSettingUpsertArgs} args - Arguments to update or create a BranchSetting.
+     * @example
+     * // Update or create a BranchSetting
+     * const branchSetting = await prisma.branchSetting.upsert({
+     *   create: {
+     *     // ... data to create a BranchSetting
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BranchSetting we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BranchSettingUpsertArgs>(args: SelectSubset<T, BranchSettingUpsertArgs<ExtArgs>>): Prisma__BranchSettingClient<$Result.GetResult<Prisma.$BranchSettingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BranchSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingCountArgs} args - Arguments to filter BranchSettings to count.
+     * @example
+     * // Count the number of BranchSettings
+     * const count = await prisma.branchSetting.count({
+     *   where: {
+     *     // ... the filter for the BranchSettings we want to count
+     *   }
+     * })
+    **/
+    count<T extends BranchSettingCountArgs>(
+      args?: Subset<T, BranchSettingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BranchSettingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BranchSetting.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BranchSettingAggregateArgs>(args: Subset<T, BranchSettingAggregateArgs>): Prisma.PrismaPromise<GetBranchSettingAggregateType<T>>
+
+    /**
+     * Group by BranchSetting.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BranchSettingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BranchSettingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BranchSettingGroupByArgs['orderBy'] }
+        : { orderBy?: BranchSettingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BranchSettingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBranchSettingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BranchSetting model
+   */
+  readonly fields: BranchSettingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BranchSetting.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BranchSettingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends BranchSetting$branchArgs<ExtArgs> = {}>(args?: Subset<T, BranchSetting$branchArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BranchSetting model
+   */
+  interface BranchSettingFieldRefs {
+    readonly id: FieldRef<"BranchSetting", 'Int'>
+    readonly branchId: FieldRef<"BranchSetting", 'Int'>
+    readonly key: FieldRef<"BranchSetting", 'String'>
+    readonly value: FieldRef<"BranchSetting", 'Json'>
+    readonly createdAt: FieldRef<"BranchSetting", 'DateTime'>
+    readonly updatedAt: FieldRef<"BranchSetting", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BranchSetting findUnique
+   */
+  export type BranchSettingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which BranchSetting to fetch.
+     */
+    where: BranchSettingWhereUniqueInput
+  }
+
+  /**
+   * BranchSetting findUniqueOrThrow
+   */
+  export type BranchSettingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which BranchSetting to fetch.
+     */
+    where: BranchSettingWhereUniqueInput
+  }
+
+  /**
+   * BranchSetting findFirst
+   */
+  export type BranchSettingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which BranchSetting to fetch.
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BranchSettings to fetch.
+     */
+    orderBy?: BranchSettingOrderByWithRelationInput | BranchSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BranchSettings.
+     */
+    cursor?: BranchSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BranchSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BranchSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BranchSettings.
+     */
+    distinct?: BranchSettingScalarFieldEnum | BranchSettingScalarFieldEnum[]
+  }
+
+  /**
+   * BranchSetting findFirstOrThrow
+   */
+  export type BranchSettingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which BranchSetting to fetch.
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BranchSettings to fetch.
+     */
+    orderBy?: BranchSettingOrderByWithRelationInput | BranchSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BranchSettings.
+     */
+    cursor?: BranchSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BranchSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BranchSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BranchSettings.
+     */
+    distinct?: BranchSettingScalarFieldEnum | BranchSettingScalarFieldEnum[]
+  }
+
+  /**
+   * BranchSetting findMany
+   */
+  export type BranchSettingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * Filter, which BranchSettings to fetch.
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BranchSettings to fetch.
+     */
+    orderBy?: BranchSettingOrderByWithRelationInput | BranchSettingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BranchSettings.
+     */
+    cursor?: BranchSettingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BranchSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BranchSettings.
+     */
+    skip?: number
+    distinct?: BranchSettingScalarFieldEnum | BranchSettingScalarFieldEnum[]
+  }
+
+  /**
+   * BranchSetting create
+   */
+  export type BranchSettingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BranchSetting.
+     */
+    data: XOR<BranchSettingCreateInput, BranchSettingUncheckedCreateInput>
+  }
+
+  /**
+   * BranchSetting createMany
+   */
+  export type BranchSettingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BranchSettings.
+     */
+    data: BranchSettingCreateManyInput | BranchSettingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BranchSetting createManyAndReturn
+   */
+  export type BranchSettingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * The data used to create many BranchSettings.
+     */
+    data: BranchSettingCreateManyInput | BranchSettingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BranchSetting update
+   */
+  export type BranchSettingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BranchSetting.
+     */
+    data: XOR<BranchSettingUpdateInput, BranchSettingUncheckedUpdateInput>
+    /**
+     * Choose, which BranchSetting to update.
+     */
+    where: BranchSettingWhereUniqueInput
+  }
+
+  /**
+   * BranchSetting updateMany
+   */
+  export type BranchSettingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BranchSettings.
+     */
+    data: XOR<BranchSettingUpdateManyMutationInput, BranchSettingUncheckedUpdateManyInput>
+    /**
+     * Filter which BranchSettings to update
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * Limit how many BranchSettings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BranchSetting updateManyAndReturn
+   */
+  export type BranchSettingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * The data used to update BranchSettings.
+     */
+    data: XOR<BranchSettingUpdateManyMutationInput, BranchSettingUncheckedUpdateManyInput>
+    /**
+     * Filter which BranchSettings to update
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * Limit how many BranchSettings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BranchSetting upsert
+   */
+  export type BranchSettingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BranchSetting to update in case it exists.
+     */
+    where: BranchSettingWhereUniqueInput
+    /**
+     * In case the BranchSetting found by the `where` argument doesn't exist, create a new BranchSetting with this data.
+     */
+    create: XOR<BranchSettingCreateInput, BranchSettingUncheckedCreateInput>
+    /**
+     * In case the BranchSetting was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BranchSettingUpdateInput, BranchSettingUncheckedUpdateInput>
+  }
+
+  /**
+   * BranchSetting delete
+   */
+  export type BranchSettingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
+    /**
+     * Filter which BranchSetting to delete.
+     */
+    where: BranchSettingWhereUniqueInput
+  }
+
+  /**
+   * BranchSetting deleteMany
+   */
+  export type BranchSettingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BranchSettings to delete
+     */
+    where?: BranchSettingWhereInput
+    /**
+     * Limit how many BranchSettings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BranchSetting.branch
+   */
+  export type BranchSetting$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Branch
+     */
+    select?: BranchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Branch
+     */
+    omit?: BranchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchInclude<ExtArgs> | null
+    where?: BranchWhereInput
+  }
+
+  /**
+   * BranchSetting without action
+   */
+  export type BranchSettingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BranchSetting
+     */
+    select?: BranchSettingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BranchSetting
+     */
+    omit?: BranchSettingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchSettingInclude<ExtArgs> | null
   }
 
 
@@ -10273,6 +11525,7 @@ export namespace Prisma {
     branchId: number | null
     frameId: number | null
     priceOverride: number | null
+    slotBorderWidth: number | null
   }
 
   export type FrameDesignSumAggregateOutputType = {
@@ -10280,6 +11533,7 @@ export namespace Prisma {
     branchId: number | null
     frameId: number | null
     priceOverride: number | null
+    slotBorderWidth: number | null
   }
 
   export type FrameDesignMinAggregateOutputType = {
@@ -10292,6 +11546,8 @@ export namespace Prisma {
     bgColorHex: string | null
     thumbnailUrl: string | null
     priceOverride: number | null
+    slotBorderColor: string | null
+    slotBorderWidth: number | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -10307,6 +11563,8 @@ export namespace Prisma {
     bgColorHex: string | null
     thumbnailUrl: string | null
     priceOverride: number | null
+    slotBorderColor: string | null
+    slotBorderWidth: number | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -10322,6 +11580,8 @@ export namespace Prisma {
     bgColorHex: number
     thumbnailUrl: number
     priceOverride: number
+    slotBorderColor: number
+    slotBorderWidth: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -10334,6 +11594,7 @@ export namespace Prisma {
     branchId?: true
     frameId?: true
     priceOverride?: true
+    slotBorderWidth?: true
   }
 
   export type FrameDesignSumAggregateInputType = {
@@ -10341,6 +11602,7 @@ export namespace Prisma {
     branchId?: true
     frameId?: true
     priceOverride?: true
+    slotBorderWidth?: true
   }
 
   export type FrameDesignMinAggregateInputType = {
@@ -10353,6 +11615,8 @@ export namespace Prisma {
     bgColorHex?: true
     thumbnailUrl?: true
     priceOverride?: true
+    slotBorderColor?: true
+    slotBorderWidth?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -10368,6 +11632,8 @@ export namespace Prisma {
     bgColorHex?: true
     thumbnailUrl?: true
     priceOverride?: true
+    slotBorderColor?: true
+    slotBorderWidth?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -10383,6 +11649,8 @@ export namespace Prisma {
     bgColorHex?: true
     thumbnailUrl?: true
     priceOverride?: true
+    slotBorderColor?: true
+    slotBorderWidth?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -10485,6 +11753,8 @@ export namespace Prisma {
     bgColorHex: string | null
     thumbnailUrl: string
     priceOverride: number | null
+    slotBorderColor: string | null
+    slotBorderWidth: number | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -10519,6 +11789,8 @@ export namespace Prisma {
     bgColorHex?: boolean
     thumbnailUrl?: boolean
     priceOverride?: boolean
+    slotBorderColor?: boolean
+    slotBorderWidth?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10538,6 +11810,8 @@ export namespace Prisma {
     bgColorHex?: boolean
     thumbnailUrl?: boolean
     priceOverride?: boolean
+    slotBorderColor?: boolean
+    slotBorderWidth?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10555,6 +11829,8 @@ export namespace Prisma {
     bgColorHex?: boolean
     thumbnailUrl?: boolean
     priceOverride?: boolean
+    slotBorderColor?: boolean
+    slotBorderWidth?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -10572,12 +11848,14 @@ export namespace Prisma {
     bgColorHex?: boolean
     thumbnailUrl?: boolean
     priceOverride?: boolean
+    slotBorderColor?: boolean
+    slotBorderWidth?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FrameDesignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "frameId" | "name" | "overlayUrl" | "backgroundUrl" | "bgColorHex" | "thumbnailUrl" | "priceOverride" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["frameDesign"]>
+  export type FrameDesignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "frameId" | "name" | "overlayUrl" | "backgroundUrl" | "bgColorHex" | "thumbnailUrl" | "priceOverride" | "slotBorderColor" | "slotBorderWidth" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["frameDesign"]>
   export type FrameDesignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     branch?: boolean | FrameDesign$branchArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
@@ -10610,6 +11888,8 @@ export namespace Prisma {
       bgColorHex: string | null
       thumbnailUrl: string
       priceOverride: number | null
+      slotBorderColor: string | null
+      slotBorderWidth: number | null
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -11048,6 +12328,8 @@ export namespace Prisma {
     readonly bgColorHex: FieldRef<"FrameDesign", 'String'>
     readonly thumbnailUrl: FieldRef<"FrameDesign", 'String'>
     readonly priceOverride: FieldRef<"FrameDesign", 'Int'>
+    readonly slotBorderColor: FieldRef<"FrameDesign", 'String'>
+    readonly slotBorderWidth: FieldRef<"FrameDesign", 'Int'>
     readonly isActive: FieldRef<"FrameDesign", 'Boolean'>
     readonly createdAt: FieldRef<"FrameDesign", 'DateTime'>
     readonly updatedAt: FieldRef<"FrameDesign", 'DateTime'>
@@ -11733,7 +13015,7 @@ export namespace Prisma {
     id: number
     branchId: number
     frameId: number
-    designId: number
+    designId: number | null
     amount: number
     copies: number
     paymentMethod: string
@@ -11776,7 +13058,7 @@ export namespace Prisma {
     updatedAt?: boolean
     branch?: boolean | BranchDefaultArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
-    design?: boolean | FrameDesignDefaultArgs<ExtArgs>
+    design?: boolean | Transaction$designArgs<ExtArgs>
     photos?: boolean | Transaction$photosArgs<ExtArgs>
     _count?: boolean | TransactionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
@@ -11795,7 +13077,7 @@ export namespace Prisma {
     updatedAt?: boolean
     branch?: boolean | BranchDefaultArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
-    design?: boolean | FrameDesignDefaultArgs<ExtArgs>
+    design?: boolean | Transaction$designArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
 
   export type TransactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -11812,7 +13094,7 @@ export namespace Prisma {
     updatedAt?: boolean
     branch?: boolean | BranchDefaultArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
-    design?: boolean | FrameDesignDefaultArgs<ExtArgs>
+    design?: boolean | Transaction$designArgs<ExtArgs>
   }, ExtArgs["result"]["transaction"]>
 
   export type TransactionSelectScalar = {
@@ -11833,19 +13115,19 @@ export namespace Prisma {
   export type TransactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     branch?: boolean | BranchDefaultArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
-    design?: boolean | FrameDesignDefaultArgs<ExtArgs>
+    design?: boolean | Transaction$designArgs<ExtArgs>
     photos?: boolean | Transaction$photosArgs<ExtArgs>
     _count?: boolean | TransactionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TransactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     branch?: boolean | BranchDefaultArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
-    design?: boolean | FrameDesignDefaultArgs<ExtArgs>
+    design?: boolean | Transaction$designArgs<ExtArgs>
   }
   export type TransactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     branch?: boolean | BranchDefaultArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
-    design?: boolean | FrameDesignDefaultArgs<ExtArgs>
+    design?: boolean | Transaction$designArgs<ExtArgs>
   }
 
   export type $TransactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11853,14 +13135,14 @@ export namespace Prisma {
     objects: {
       branch: Prisma.$BranchPayload<ExtArgs>
       frame: Prisma.$FramePayload<ExtArgs>
-      design: Prisma.$FrameDesignPayload<ExtArgs>
+      design: Prisma.$FrameDesignPayload<ExtArgs> | null
       photos: Prisma.$PhotoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       branchId: number
       frameId: number
-      designId: number
+      designId: number | null
       amount: number
       copies: number
       paymentMethod: string
@@ -12264,7 +13546,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     branch<T extends BranchDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BranchDefaultArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     frame<T extends FrameDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FrameDefaultArgs<ExtArgs>>): Prisma__FrameClient<$Result.GetResult<Prisma.$FramePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    design<T extends FrameDesignDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FrameDesignDefaultArgs<ExtArgs>>): Prisma__FrameDesignClient<$Result.GetResult<Prisma.$FrameDesignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    design<T extends Transaction$designArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$designArgs<ExtArgs>>): Prisma__FrameDesignClient<$Result.GetResult<Prisma.$FrameDesignPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     photos<T extends Transaction$photosArgs<ExtArgs> = {}>(args?: Subset<T, Transaction$photosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -12699,6 +13981,25 @@ export namespace Prisma {
      * Limit how many Transactions to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Transaction.design
+   */
+  export type Transaction$designArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FrameDesign
+     */
+    select?: FrameDesignSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FrameDesign
+     */
+    omit?: FrameDesignOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FrameDesignInclude<ExtArgs> | null
+    where?: FrameDesignWhereInput
   }
 
   /**
@@ -15104,6 +16405,18 @@ export namespace Prisma {
   export type BranchScalarFieldEnum = (typeof BranchScalarFieldEnum)[keyof typeof BranchScalarFieldEnum]
 
 
+  export const BranchSettingScalarFieldEnum: {
+    id: 'id',
+    branchId: 'branchId',
+    key: 'key',
+    value: 'value',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BranchSettingScalarFieldEnum = (typeof BranchSettingScalarFieldEnum)[keyof typeof BranchSettingScalarFieldEnum]
+
+
   export const RoleScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -15190,6 +16503,8 @@ export namespace Prisma {
     bgColorHex: 'bgColorHex',
     thumbnailUrl: 'thumbnailUrl',
     priceOverride: 'priceOverride',
+    slotBorderColor: 'slotBorderColor',
+    slotBorderWidth: 'slotBorderWidth',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -15267,14 +16582,6 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
-
-
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull,
@@ -15282,6 +16589,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -15385,6 +16700,7 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     photos?: PhotoListRelationFilter
     devices?: DeviceListRelationFilter
+    settings?: BranchSettingListRelationFilter
     activityLogs?: ActivityLogListRelationFilter
   }
 
@@ -15401,6 +16717,7 @@ export namespace Prisma {
     transactions?: TransactionOrderByRelationAggregateInput
     photos?: PhotoOrderByRelationAggregateInput
     devices?: DeviceOrderByRelationAggregateInput
+    settings?: BranchSettingOrderByRelationAggregateInput
     activityLogs?: ActivityLogOrderByRelationAggregateInput
   }
 
@@ -15420,6 +16737,7 @@ export namespace Prisma {
     transactions?: TransactionListRelationFilter
     photos?: PhotoListRelationFilter
     devices?: DeviceListRelationFilter
+    settings?: BranchSettingListRelationFilter
     activityLogs?: ActivityLogListRelationFilter
   }, "id">
 
@@ -15447,6 +16765,69 @@ export namespace Prisma {
     isActive?: BoolWithAggregatesFilter<"Branch"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Branch"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Branch"> | Date | string
+  }
+
+  export type BranchSettingWhereInput = {
+    AND?: BranchSettingWhereInput | BranchSettingWhereInput[]
+    OR?: BranchSettingWhereInput[]
+    NOT?: BranchSettingWhereInput | BranchSettingWhereInput[]
+    id?: IntFilter<"BranchSetting"> | number
+    branchId?: IntNullableFilter<"BranchSetting"> | number | null
+    key?: StringFilter<"BranchSetting"> | string
+    value?: JsonFilter<"BranchSetting">
+    createdAt?: DateTimeFilter<"BranchSetting"> | Date | string
+    updatedAt?: DateTimeFilter<"BranchSetting"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }
+
+  export type BranchSettingOrderByWithRelationInput = {
+    id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    branch?: BranchOrderByWithRelationInput
+  }
+
+  export type BranchSettingWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    branchId_key?: BranchSettingBranchIdKeyCompoundUniqueInput
+    AND?: BranchSettingWhereInput | BranchSettingWhereInput[]
+    OR?: BranchSettingWhereInput[]
+    NOT?: BranchSettingWhereInput | BranchSettingWhereInput[]
+    branchId?: IntNullableFilter<"BranchSetting"> | number | null
+    key?: StringFilter<"BranchSetting"> | string
+    value?: JsonFilter<"BranchSetting">
+    createdAt?: DateTimeFilter<"BranchSetting"> | Date | string
+    updatedAt?: DateTimeFilter<"BranchSetting"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }, "id" | "branchId_key">
+
+  export type BranchSettingOrderByWithAggregationInput = {
+    id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BranchSettingCountOrderByAggregateInput
+    _avg?: BranchSettingAvgOrderByAggregateInput
+    _max?: BranchSettingMaxOrderByAggregateInput
+    _min?: BranchSettingMinOrderByAggregateInput
+    _sum?: BranchSettingSumOrderByAggregateInput
+  }
+
+  export type BranchSettingScalarWhereWithAggregatesInput = {
+    AND?: BranchSettingScalarWhereWithAggregatesInput | BranchSettingScalarWhereWithAggregatesInput[]
+    OR?: BranchSettingScalarWhereWithAggregatesInput[]
+    NOT?: BranchSettingScalarWhereWithAggregatesInput | BranchSettingScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"BranchSetting"> | number
+    branchId?: IntNullableWithAggregatesFilter<"BranchSetting"> | number | null
+    key?: StringWithAggregatesFilter<"BranchSetting"> | string
+    value?: JsonWithAggregatesFilter<"BranchSetting">
+    createdAt?: DateTimeWithAggregatesFilter<"BranchSetting"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BranchSetting"> | Date | string
   }
 
   export type RoleWhereInput = {
@@ -15873,6 +17254,8 @@ export namespace Prisma {
     bgColorHex?: StringNullableFilter<"FrameDesign"> | string | null
     thumbnailUrl?: StringFilter<"FrameDesign"> | string
     priceOverride?: IntNullableFilter<"FrameDesign"> | number | null
+    slotBorderColor?: StringNullableFilter<"FrameDesign"> | string | null
+    slotBorderWidth?: IntNullableFilter<"FrameDesign"> | number | null
     isActive?: BoolFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeFilter<"FrameDesign"> | Date | string
@@ -15891,6 +17274,8 @@ export namespace Prisma {
     bgColorHex?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrder
     priceOverride?: SortOrderInput | SortOrder
+    slotBorderColor?: SortOrderInput | SortOrder
+    slotBorderWidth?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -15912,6 +17297,8 @@ export namespace Prisma {
     bgColorHex?: StringNullableFilter<"FrameDesign"> | string | null
     thumbnailUrl?: StringFilter<"FrameDesign"> | string
     priceOverride?: IntNullableFilter<"FrameDesign"> | number | null
+    slotBorderColor?: StringNullableFilter<"FrameDesign"> | string | null
+    slotBorderWidth?: IntNullableFilter<"FrameDesign"> | number | null
     isActive?: BoolFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeFilter<"FrameDesign"> | Date | string
@@ -15930,6 +17317,8 @@ export namespace Prisma {
     bgColorHex?: SortOrderInput | SortOrder
     thumbnailUrl?: SortOrder
     priceOverride?: SortOrderInput | SortOrder
+    slotBorderColor?: SortOrderInput | SortOrder
+    slotBorderWidth?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -15953,6 +17342,8 @@ export namespace Prisma {
     bgColorHex?: StringNullableWithAggregatesFilter<"FrameDesign"> | string | null
     thumbnailUrl?: StringWithAggregatesFilter<"FrameDesign"> | string
     priceOverride?: IntNullableWithAggregatesFilter<"FrameDesign"> | number | null
+    slotBorderColor?: StringNullableWithAggregatesFilter<"FrameDesign"> | string | null
+    slotBorderWidth?: IntNullableWithAggregatesFilter<"FrameDesign"> | number | null
     isActive?: BoolWithAggregatesFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FrameDesign"> | Date | string
@@ -15965,7 +17356,7 @@ export namespace Prisma {
     id?: IntFilter<"Transaction"> | number
     branchId?: IntFilter<"Transaction"> | number
     frameId?: IntFilter<"Transaction"> | number
-    designId?: IntFilter<"Transaction"> | number
+    designId?: IntNullableFilter<"Transaction"> | number | null
     amount?: IntFilter<"Transaction"> | number
     copies?: IntFilter<"Transaction"> | number
     paymentMethod?: StringFilter<"Transaction"> | string
@@ -15975,7 +17366,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     branch?: XOR<BranchScalarRelationFilter, BranchWhereInput>
     frame?: XOR<FrameScalarRelationFilter, FrameWhereInput>
-    design?: XOR<FrameDesignScalarRelationFilter, FrameDesignWhereInput>
+    design?: XOR<FrameDesignNullableScalarRelationFilter, FrameDesignWhereInput> | null
     photos?: PhotoListRelationFilter
   }
 
@@ -15983,7 +17374,7 @@ export namespace Prisma {
     id?: SortOrder
     branchId?: SortOrder
     frameId?: SortOrder
-    designId?: SortOrder
+    designId?: SortOrderInput | SortOrder
     amount?: SortOrder
     copies?: SortOrder
     paymentMethod?: SortOrder
@@ -16004,7 +17395,7 @@ export namespace Prisma {
     NOT?: TransactionWhereInput | TransactionWhereInput[]
     branchId?: IntFilter<"Transaction"> | number
     frameId?: IntFilter<"Transaction"> | number
-    designId?: IntFilter<"Transaction"> | number
+    designId?: IntNullableFilter<"Transaction"> | number | null
     amount?: IntFilter<"Transaction"> | number
     copies?: IntFilter<"Transaction"> | number
     paymentMethod?: StringFilter<"Transaction"> | string
@@ -16014,7 +17405,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Transaction"> | Date | string
     branch?: XOR<BranchScalarRelationFilter, BranchWhereInput>
     frame?: XOR<FrameScalarRelationFilter, FrameWhereInput>
-    design?: XOR<FrameDesignScalarRelationFilter, FrameDesignWhereInput>
+    design?: XOR<FrameDesignNullableScalarRelationFilter, FrameDesignWhereInput> | null
     photos?: PhotoListRelationFilter
   }, "id">
 
@@ -16022,7 +17413,7 @@ export namespace Prisma {
     id?: SortOrder
     branchId?: SortOrder
     frameId?: SortOrder
-    designId?: SortOrder
+    designId?: SortOrderInput | SortOrder
     amount?: SortOrder
     copies?: SortOrder
     paymentMethod?: SortOrder
@@ -16044,7 +17435,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Transaction"> | number
     branchId?: IntWithAggregatesFilter<"Transaction"> | number
     frameId?: IntWithAggregatesFilter<"Transaction"> | number
-    designId?: IntWithAggregatesFilter<"Transaction"> | number
+    designId?: IntNullableWithAggregatesFilter<"Transaction"> | number | null
     amount?: IntWithAggregatesFilter<"Transaction"> | number
     copies?: IntWithAggregatesFilter<"Transaction"> | number
     paymentMethod?: StringWithAggregatesFilter<"Transaction"> | string
@@ -16221,6 +17612,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -16237,6 +17629,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -16252,6 +17645,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -16268,6 +17662,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -16293,6 +17688,65 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     address?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BranchSettingCreateInput = {
+    key: string
+    value: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    branch?: BranchCreateNestedOneWithoutSettingsInput
+  }
+
+  export type BranchSettingUncheckedCreateInput = {
+    id?: number
+    branchId?: number | null
+    key: string
+    value: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BranchSettingUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branch?: BranchUpdateOneWithoutSettingsNestedInput
+  }
+
+  export type BranchSettingUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    branchId?: NullableIntFieldUpdateOperationsInput | number | null
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BranchSettingCreateManyInput = {
+    id?: number
+    branchId?: number | null
+    key: string
+    value: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BranchSettingUpdateManyMutationInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BranchSettingUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    branchId?: NullableIntFieldUpdateOperationsInput | number | null
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -16711,6 +18165,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -16729,6 +18185,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -16742,6 +18200,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16760,6 +18220,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16776,6 +18238,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -16788,6 +18252,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16803,6 +18269,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16818,7 +18286,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     branch: BranchCreateNestedOneWithoutTransactionsInput
     frame: FrameCreateNestedOneWithoutTransactionsInput
-    design: FrameDesignCreateNestedOneWithoutTransactionsInput
+    design?: FrameDesignCreateNestedOneWithoutTransactionsInput
     photos?: PhotoCreateNestedManyWithoutTransactionInput
   }
 
@@ -16826,7 +18294,7 @@ export namespace Prisma {
     id?: number
     branchId: number
     frameId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -16847,7 +18315,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     branch?: BranchUpdateOneRequiredWithoutTransactionsNestedInput
     frame?: FrameUpdateOneRequiredWithoutTransactionsNestedInput
-    design?: FrameDesignUpdateOneRequiredWithoutTransactionsNestedInput
+    design?: FrameDesignUpdateOneWithoutTransactionsNestedInput
     photos?: PhotoUpdateManyWithoutTransactionNestedInput
   }
 
@@ -16855,7 +18323,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     branchId?: IntFieldUpdateOperationsInput | number
     frameId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string
@@ -16870,7 +18338,7 @@ export namespace Prisma {
     id?: number
     branchId: number
     frameId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -16894,7 +18362,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     branchId?: IntFieldUpdateOperationsInput | number
     frameId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string
@@ -17133,6 +18601,12 @@ export namespace Prisma {
     none?: DeviceWhereInput
   }
 
+  export type BranchSettingListRelationFilter = {
+    every?: BranchSettingWhereInput
+    some?: BranchSettingWhereInput
+    none?: BranchSettingWhereInput
+  }
+
   export type ActivityLogListRelationFilter = {
     every?: ActivityLogWhereInput
     some?: ActivityLogWhereInput
@@ -17160,6 +18634,10 @@ export namespace Prisma {
   }
 
   export type DeviceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BranchSettingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -17256,6 +18734,132 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type BranchNullableScalarRelationFilter = {
+    is?: BranchWhereInput | null
+    isNot?: BranchWhereInput | null
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
+  export type BranchSettingBranchIdKeyCompoundUniqueInput = {
+    branchId: number
+    key: string
+  }
+
+  export type BranchSettingCountOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    key?: SortOrder
+    value?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BranchSettingAvgOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+  }
+
+  export type BranchSettingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    key?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BranchSettingMinOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    key?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BranchSettingSumOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type RolePermissionListRelationFilter = {
@@ -17374,27 +18978,6 @@ export namespace Prisma {
     permissionId?: SortOrder
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type BranchNullableScalarRelationFilter = {
-    is?: BranchWhereInput | null
-    isNot?: BranchWhereInput | null
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
-  }
-
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
@@ -17438,22 +19021,6 @@ export namespace Prisma {
     id?: SortOrder
     roleId?: SortOrder
     branchId?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -17524,29 +19091,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-  export type JsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type StringNullableFilter<$PrismaModel = never> = {
@@ -17627,32 +19171,6 @@ export namespace Prisma {
     photoCount?: SortOrder
     price?: SortOrder
   }
-  export type JsonWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedJsonFilter<$PrismaModel>
-    _max?: NestedJsonFilter<$PrismaModel>
-  }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
@@ -17687,6 +19205,8 @@ export namespace Prisma {
     bgColorHex?: SortOrder
     thumbnailUrl?: SortOrder
     priceOverride?: SortOrder
+    slotBorderColor?: SortOrder
+    slotBorderWidth?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -17697,6 +19217,7 @@ export namespace Prisma {
     branchId?: SortOrder
     frameId?: SortOrder
     priceOverride?: SortOrder
+    slotBorderWidth?: SortOrder
   }
 
   export type FrameDesignMaxOrderByAggregateInput = {
@@ -17709,6 +19230,8 @@ export namespace Prisma {
     bgColorHex?: SortOrder
     thumbnailUrl?: SortOrder
     priceOverride?: SortOrder
+    slotBorderColor?: SortOrder
+    slotBorderWidth?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -17724,6 +19247,8 @@ export namespace Prisma {
     bgColorHex?: SortOrder
     thumbnailUrl?: SortOrder
     priceOverride?: SortOrder
+    slotBorderColor?: SortOrder
+    slotBorderWidth?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -17734,11 +19259,12 @@ export namespace Prisma {
     branchId?: SortOrder
     frameId?: SortOrder
     priceOverride?: SortOrder
+    slotBorderWidth?: SortOrder
   }
 
-  export type FrameDesignScalarRelationFilter = {
-    is?: FrameDesignWhereInput
-    isNot?: FrameDesignWhereInput
+  export type FrameDesignNullableScalarRelationFilter = {
+    is?: FrameDesignWhereInput | null
+    isNot?: FrameDesignWhereInput | null
   }
 
   export type TransactionCountOrderByAggregateInput = {
@@ -17950,6 +19476,13 @@ export namespace Prisma {
     connect?: DeviceWhereUniqueInput | DeviceWhereUniqueInput[]
   }
 
+  export type BranchSettingCreateNestedManyWithoutBranchInput = {
+    create?: XOR<BranchSettingCreateWithoutBranchInput, BranchSettingUncheckedCreateWithoutBranchInput> | BranchSettingCreateWithoutBranchInput[] | BranchSettingUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: BranchSettingCreateOrConnectWithoutBranchInput | BranchSettingCreateOrConnectWithoutBranchInput[]
+    createMany?: BranchSettingCreateManyBranchInputEnvelope
+    connect?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+  }
+
   export type ActivityLogCreateNestedManyWithoutBranchInput = {
     create?: XOR<ActivityLogCreateWithoutBranchInput, ActivityLogUncheckedCreateWithoutBranchInput> | ActivityLogCreateWithoutBranchInput[] | ActivityLogUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: ActivityLogCreateOrConnectWithoutBranchInput | ActivityLogCreateOrConnectWithoutBranchInput[]
@@ -17997,6 +19530,13 @@ export namespace Prisma {
     connectOrCreate?: DeviceCreateOrConnectWithoutBranchInput | DeviceCreateOrConnectWithoutBranchInput[]
     createMany?: DeviceCreateManyBranchInputEnvelope
     connect?: DeviceWhereUniqueInput | DeviceWhereUniqueInput[]
+  }
+
+  export type BranchSettingUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<BranchSettingCreateWithoutBranchInput, BranchSettingUncheckedCreateWithoutBranchInput> | BranchSettingCreateWithoutBranchInput[] | BranchSettingUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: BranchSettingCreateOrConnectWithoutBranchInput | BranchSettingCreateOrConnectWithoutBranchInput[]
+    createMany?: BranchSettingCreateManyBranchInputEnvelope
+    connect?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
   }
 
   export type ActivityLogUncheckedCreateNestedManyWithoutBranchInput = {
@@ -18100,6 +19640,20 @@ export namespace Prisma {
     update?: DeviceUpdateWithWhereUniqueWithoutBranchInput | DeviceUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: DeviceUpdateManyWithWhereWithoutBranchInput | DeviceUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: DeviceScalarWhereInput | DeviceScalarWhereInput[]
+  }
+
+  export type BranchSettingUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<BranchSettingCreateWithoutBranchInput, BranchSettingUncheckedCreateWithoutBranchInput> | BranchSettingCreateWithoutBranchInput[] | BranchSettingUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: BranchSettingCreateOrConnectWithoutBranchInput | BranchSettingCreateOrConnectWithoutBranchInput[]
+    upsert?: BranchSettingUpsertWithWhereUniqueWithoutBranchInput | BranchSettingUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: BranchSettingCreateManyBranchInputEnvelope
+    set?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    disconnect?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    delete?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    connect?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    update?: BranchSettingUpdateWithWhereUniqueWithoutBranchInput | BranchSettingUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: BranchSettingUpdateManyWithWhereWithoutBranchInput | BranchSettingUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: BranchSettingScalarWhereInput | BranchSettingScalarWhereInput[]
   }
 
   export type ActivityLogUpdateManyWithoutBranchNestedInput = {
@@ -18208,6 +19762,20 @@ export namespace Prisma {
     deleteMany?: DeviceScalarWhereInput | DeviceScalarWhereInput[]
   }
 
+  export type BranchSettingUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<BranchSettingCreateWithoutBranchInput, BranchSettingUncheckedCreateWithoutBranchInput> | BranchSettingCreateWithoutBranchInput[] | BranchSettingUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: BranchSettingCreateOrConnectWithoutBranchInput | BranchSettingCreateOrConnectWithoutBranchInput[]
+    upsert?: BranchSettingUpsertWithWhereUniqueWithoutBranchInput | BranchSettingUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: BranchSettingCreateManyBranchInputEnvelope
+    set?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    disconnect?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    delete?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    connect?: BranchSettingWhereUniqueInput | BranchSettingWhereUniqueInput[]
+    update?: BranchSettingUpdateWithWhereUniqueWithoutBranchInput | BranchSettingUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: BranchSettingUpdateManyWithWhereWithoutBranchInput | BranchSettingUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: BranchSettingScalarWhereInput | BranchSettingScalarWhereInput[]
+  }
+
   export type ActivityLogUncheckedUpdateManyWithoutBranchNestedInput = {
     create?: XOR<ActivityLogCreateWithoutBranchInput, ActivityLogUncheckedCreateWithoutBranchInput> | ActivityLogCreateWithoutBranchInput[] | ActivityLogUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: ActivityLogCreateOrConnectWithoutBranchInput | ActivityLogCreateOrConnectWithoutBranchInput[]
@@ -18220,6 +19788,30 @@ export namespace Prisma {
     update?: ActivityLogUpdateWithWhereUniqueWithoutBranchInput | ActivityLogUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: ActivityLogUpdateManyWithWhereWithoutBranchInput | ActivityLogUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: ActivityLogScalarWhereInput | ActivityLogScalarWhereInput[]
+  }
+
+  export type BranchCreateNestedOneWithoutSettingsInput = {
+    create?: XOR<BranchCreateWithoutSettingsInput, BranchUncheckedCreateWithoutSettingsInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutSettingsInput
+    connect?: BranchWhereUniqueInput
+  }
+
+  export type BranchUpdateOneWithoutSettingsNestedInput = {
+    create?: XOR<BranchCreateWithoutSettingsInput, BranchUncheckedCreateWithoutSettingsInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutSettingsInput
+    upsert?: BranchUpsertWithoutSettingsInput
+    disconnect?: BranchWhereInput | boolean
+    delete?: BranchWhereInput | boolean
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutSettingsInput, BranchUpdateWithoutSettingsInput>, BranchUncheckedUpdateWithoutSettingsInput>
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type UserCreateNestedManyWithoutRoleInput = {
@@ -18432,14 +20024,6 @@ export namespace Prisma {
     update?: ActivityLogUpdateWithWhereUniqueWithoutUserInput | ActivityLogUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ActivityLogUpdateManyWithWhereWithoutUserInput | ActivityLogUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ActivityLogScalarWhereInput | ActivityLogScalarWhereInput[]
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type ActivityLogUncheckedUpdateManyWithoutUserNestedInput = {
@@ -18698,10 +20282,12 @@ export namespace Prisma {
     update?: XOR<XOR<FrameUpdateToOneWithWhereWithoutTransactionsInput, FrameUpdateWithoutTransactionsInput>, FrameUncheckedUpdateWithoutTransactionsInput>
   }
 
-  export type FrameDesignUpdateOneRequiredWithoutTransactionsNestedInput = {
+  export type FrameDesignUpdateOneWithoutTransactionsNestedInput = {
     create?: XOR<FrameDesignCreateWithoutTransactionsInput, FrameDesignUncheckedCreateWithoutTransactionsInput>
     connectOrCreate?: FrameDesignCreateOrConnectWithoutTransactionsInput
     upsert?: FrameDesignUpsertWithoutTransactionsInput
+    disconnect?: FrameDesignWhereInput | boolean
+    delete?: FrameDesignWhereInput | boolean
     connect?: FrameDesignWhereUniqueInput
     update?: XOR<XOR<FrameDesignUpdateToOneWithWhereWithoutTransactionsInput, FrameDesignUpdateWithoutTransactionsInput>, FrameDesignUncheckedUpdateWithoutTransactionsInput>
   }
@@ -18936,6 +20522,29 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
@@ -18974,29 +20583,6 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-  export type NestedJsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -19097,6 +20683,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19113,6 +20701,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19138,14 +20728,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     frame: FrameCreateNestedOneWithoutTransactionsInput
-    design: FrameDesignCreateNestedOneWithoutTransactionsInput
+    design?: FrameDesignCreateNestedOneWithoutTransactionsInput
     photos?: PhotoCreateNestedManyWithoutTransactionInput
   }
 
   export type TransactionUncheckedCreateWithoutBranchInput = {
     id?: number
     frameId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -19221,6 +20811,31 @@ export namespace Prisma {
 
   export type DeviceCreateManyBranchInputEnvelope = {
     data: DeviceCreateManyBranchInput | DeviceCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BranchSettingCreateWithoutBranchInput = {
+    key: string
+    value: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BranchSettingUncheckedCreateWithoutBranchInput = {
+    id?: number
+    key: string
+    value: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BranchSettingCreateOrConnectWithoutBranchInput = {
+    where: BranchSettingWhereUniqueInput
+    create: XOR<BranchSettingCreateWithoutBranchInput, BranchSettingUncheckedCreateWithoutBranchInput>
+  }
+
+  export type BranchSettingCreateManyBranchInputEnvelope = {
+    data: BranchSettingCreateManyBranchInput | BranchSettingCreateManyBranchInput[]
     skipDuplicates?: boolean
   }
 
@@ -19347,6 +20962,8 @@ export namespace Prisma {
     bgColorHex?: StringNullableFilter<"FrameDesign"> | string | null
     thumbnailUrl?: StringFilter<"FrameDesign"> | string
     priceOverride?: IntNullableFilter<"FrameDesign"> | number | null
+    slotBorderColor?: StringNullableFilter<"FrameDesign"> | string | null
+    slotBorderWidth?: IntNullableFilter<"FrameDesign"> | number | null
     isActive?: BoolFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeFilter<"FrameDesign"> | Date | string
@@ -19375,7 +20992,7 @@ export namespace Prisma {
     id?: IntFilter<"Transaction"> | number
     branchId?: IntFilter<"Transaction"> | number
     frameId?: IntFilter<"Transaction"> | number
-    designId?: IntFilter<"Transaction"> | number
+    designId?: IntNullableFilter<"Transaction"> | number | null
     amount?: IntFilter<"Transaction"> | number
     copies?: IntFilter<"Transaction"> | number
     paymentMethod?: StringFilter<"Transaction"> | string
@@ -19445,6 +21062,34 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Device"> | Date | string
   }
 
+  export type BranchSettingUpsertWithWhereUniqueWithoutBranchInput = {
+    where: BranchSettingWhereUniqueInput
+    update: XOR<BranchSettingUpdateWithoutBranchInput, BranchSettingUncheckedUpdateWithoutBranchInput>
+    create: XOR<BranchSettingCreateWithoutBranchInput, BranchSettingUncheckedCreateWithoutBranchInput>
+  }
+
+  export type BranchSettingUpdateWithWhereUniqueWithoutBranchInput = {
+    where: BranchSettingWhereUniqueInput
+    data: XOR<BranchSettingUpdateWithoutBranchInput, BranchSettingUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type BranchSettingUpdateManyWithWhereWithoutBranchInput = {
+    where: BranchSettingScalarWhereInput
+    data: XOR<BranchSettingUpdateManyMutationInput, BranchSettingUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type BranchSettingScalarWhereInput = {
+    AND?: BranchSettingScalarWhereInput | BranchSettingScalarWhereInput[]
+    OR?: BranchSettingScalarWhereInput[]
+    NOT?: BranchSettingScalarWhereInput | BranchSettingScalarWhereInput[]
+    id?: IntFilter<"BranchSetting"> | number
+    branchId?: IntNullableFilter<"BranchSetting"> | number | null
+    key?: StringFilter<"BranchSetting"> | string
+    value?: JsonFilter<"BranchSetting">
+    createdAt?: DateTimeFilter<"BranchSetting"> | Date | string
+    updatedAt?: DateTimeFilter<"BranchSetting"> | Date | string
+  }
+
   export type ActivityLogUpsertWithWhereUniqueWithoutBranchInput = {
     where: ActivityLogWhereUniqueInput
     update: XOR<ActivityLogUpdateWithoutBranchInput, ActivityLogUncheckedUpdateWithoutBranchInput>
@@ -19473,6 +21118,84 @@ export namespace Prisma {
     resourceId?: IntNullableFilter<"ActivityLog"> | number | null
     details?: StringNullableFilter<"ActivityLog"> | string | null
     createdAt?: DateTimeFilter<"ActivityLog"> | Date | string
+  }
+
+  export type BranchCreateWithoutSettingsInput = {
+    name: string
+    address?: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserCreateNestedManyWithoutBranchInput
+    frames?: FrameCreateNestedManyWithoutBranchInput
+    frameDesigns?: FrameDesignCreateNestedManyWithoutBranchInput
+    transactions?: TransactionCreateNestedManyWithoutBranchInput
+    photos?: PhotoCreateNestedManyWithoutBranchInput
+    devices?: DeviceCreateNestedManyWithoutBranchInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutSettingsInput = {
+    id?: number
+    name: string
+    address?: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    frames?: FrameUncheckedCreateNestedManyWithoutBranchInput
+    frameDesigns?: FrameDesignUncheckedCreateNestedManyWithoutBranchInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
+    photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutSettingsInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutSettingsInput, BranchUncheckedCreateWithoutSettingsInput>
+  }
+
+  export type BranchUpsertWithoutSettingsInput = {
+    update: XOR<BranchUpdateWithoutSettingsInput, BranchUncheckedUpdateWithoutSettingsInput>
+    create: XOR<BranchCreateWithoutSettingsInput, BranchUncheckedCreateWithoutSettingsInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutSettingsInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutSettingsInput, BranchUncheckedUpdateWithoutSettingsInput>
+  }
+
+  export type BranchUpdateWithoutSettingsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutBranchNestedInput
+    frames?: FrameUpdateManyWithoutBranchNestedInput
+    frameDesigns?: FrameDesignUpdateManyWithoutBranchNestedInput
+    transactions?: TransactionUpdateManyWithoutBranchNestedInput
+    photos?: PhotoUpdateManyWithoutBranchNestedInput
+    devices?: DeviceUpdateManyWithoutBranchNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutSettingsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    frames?: FrameUncheckedUpdateManyWithoutBranchNestedInput
+    frameDesigns?: FrameDesignUncheckedUpdateManyWithoutBranchNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
+    photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type UserCreateWithoutRoleInput = {
@@ -19726,6 +21449,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -19741,6 +21465,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -19828,6 +21553,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -19843,6 +21569,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -19873,6 +21600,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignCreateNestedManyWithoutBranchInput
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -19888,6 +21616,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUncheckedCreateNestedManyWithoutBranchInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -19918,6 +21647,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUpdateManyWithoutBranchNestedInput
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -19933,6 +21663,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUncheckedUpdateManyWithoutBranchNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -19947,6 +21678,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -19962,6 +21694,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -19977,6 +21710,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -19993,6 +21728,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20018,14 +21755,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     branch: BranchCreateNestedOneWithoutTransactionsInput
-    design: FrameDesignCreateNestedOneWithoutTransactionsInput
+    design?: FrameDesignCreateNestedOneWithoutTransactionsInput
     photos?: PhotoCreateNestedManyWithoutTransactionInput
   }
 
   export type TransactionUncheckedCreateWithoutFrameInput = {
     id?: number
     branchId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -20068,6 +21805,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -20083,6 +21821,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -20129,6 +21868,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -20144,6 +21884,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -20249,6 +21990,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -20264,6 +22006,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -20338,6 +22081,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -20353,6 +22097,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -20406,6 +22151,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20423,6 +22170,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20486,6 +22235,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -20501,6 +22251,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -20566,6 +22317,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20583,6 +22336,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20614,14 +22369,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     branch: BranchCreateNestedOneWithoutTransactionsInput
     frame: FrameCreateNestedOneWithoutTransactionsInput
-    design: FrameDesignCreateNestedOneWithoutTransactionsInput
+    design?: FrameDesignCreateNestedOneWithoutTransactionsInput
   }
 
   export type TransactionUncheckedCreateWithoutPhotosInput = {
     id?: number
     branchId: number
     frameId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -20647,6 +22402,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignCreateNestedManyWithoutBranchInput
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogCreateNestedManyWithoutBranchInput
   }
 
@@ -20662,6 +22418,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUncheckedCreateNestedManyWithoutBranchInput
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -20691,14 +22448,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     branch?: BranchUpdateOneRequiredWithoutTransactionsNestedInput
     frame?: FrameUpdateOneRequiredWithoutTransactionsNestedInput
-    design?: FrameDesignUpdateOneRequiredWithoutTransactionsNestedInput
+    design?: FrameDesignUpdateOneWithoutTransactionsNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutPhotosInput = {
     id?: IntFieldUpdateOperationsInput | number
     branchId?: IntFieldUpdateOperationsInput | number
     frameId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string
@@ -20730,6 +22487,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUpdateManyWithoutBranchNestedInput
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutBranchNestedInput
   }
 
@@ -20745,6 +22503,7 @@ export namespace Prisma {
     frameDesigns?: FrameDesignUncheckedUpdateManyWithoutBranchNestedInput
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -20786,6 +22545,7 @@ export namespace Prisma {
     transactions?: TransactionCreateNestedManyWithoutBranchInput
     photos?: PhotoCreateNestedManyWithoutBranchInput
     devices?: DeviceCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutActivityLogsInput = {
@@ -20801,6 +22561,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedCreateNestedManyWithoutBranchInput
     photos?: PhotoUncheckedCreateNestedManyWithoutBranchInput
     devices?: DeviceUncheckedCreateNestedManyWithoutBranchInput
+    settings?: BranchSettingUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutActivityLogsInput = {
@@ -20863,6 +22624,7 @@ export namespace Prisma {
     transactions?: TransactionUpdateManyWithoutBranchNestedInput
     photos?: PhotoUpdateManyWithoutBranchNestedInput
     devices?: DeviceUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutActivityLogsInput = {
@@ -20878,6 +22640,7 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutBranchNestedInput
     photos?: PhotoUncheckedUpdateManyWithoutBranchNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutBranchNestedInput
+    settings?: BranchSettingUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type UserCreateManyBranchInput = {
@@ -20914,6 +22677,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20922,7 +22687,7 @@ export namespace Prisma {
   export type TransactionCreateManyBranchInput = {
     id?: number
     frameId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -20948,6 +22713,14 @@ export namespace Prisma {
     name: string
     isActive?: boolean
     lastSeen?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BranchSettingCreateManyBranchInput = {
+    id?: number
+    key: string
+    value: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -21048,6 +22821,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21064,6 +22839,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21079,6 +22856,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21093,14 +22872,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     frame?: FrameUpdateOneRequiredWithoutTransactionsNestedInput
-    design?: FrameDesignUpdateOneRequiredWithoutTransactionsNestedInput
+    design?: FrameDesignUpdateOneWithoutTransactionsNestedInput
     photos?: PhotoUpdateManyWithoutTransactionNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutBranchInput = {
     id?: IntFieldUpdateOperationsInput | number
     frameId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string
@@ -21114,7 +22893,7 @@ export namespace Prisma {
   export type TransactionUncheckedUpdateManyWithoutBranchInput = {
     id?: IntFieldUpdateOperationsInput | number
     frameId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string
@@ -21178,6 +22957,29 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BranchSettingUpdateWithoutBranchInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BranchSettingUncheckedUpdateWithoutBranchInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BranchSettingUncheckedUpdateManyWithoutBranchInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    key?: StringFieldUpdateOperationsInput | string
+    value?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -21338,6 +23140,8 @@ export namespace Prisma {
     bgColorHex?: string | null
     thumbnailUrl: string
     priceOverride?: number | null
+    slotBorderColor?: string | null
+    slotBorderWidth?: number | null
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21346,7 +23150,7 @@ export namespace Prisma {
   export type TransactionCreateManyFrameInput = {
     id?: number
     branchId: number
-    designId: number
+    designId?: number | null
     amount: number
     copies?: number
     paymentMethod?: string
@@ -21363,6 +23167,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21379,6 +23185,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21394,6 +23202,8 @@ export namespace Prisma {
     bgColorHex?: NullableStringFieldUpdateOperationsInput | string | null
     thumbnailUrl?: StringFieldUpdateOperationsInput | string
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
+    slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
+    slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21408,14 +23218,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     branch?: BranchUpdateOneRequiredWithoutTransactionsNestedInput
-    design?: FrameDesignUpdateOneRequiredWithoutTransactionsNestedInput
+    design?: FrameDesignUpdateOneWithoutTransactionsNestedInput
     photos?: PhotoUpdateManyWithoutTransactionNestedInput
   }
 
   export type TransactionUncheckedUpdateWithoutFrameInput = {
     id?: IntFieldUpdateOperationsInput | number
     branchId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string
@@ -21429,7 +23239,7 @@ export namespace Prisma {
   export type TransactionUncheckedUpdateManyWithoutFrameInput = {
     id?: IntFieldUpdateOperationsInput | number
     branchId?: IntFieldUpdateOperationsInput | number
-    designId?: IntFieldUpdateOperationsInput | number
+    designId?: NullableIntFieldUpdateOperationsInput | number | null
     amount?: IntFieldUpdateOperationsInput | number
     copies?: IntFieldUpdateOperationsInput | number
     paymentMethod?: StringFieldUpdateOperationsInput | string

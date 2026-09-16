@@ -33,6 +33,7 @@ async function main() {
     { code: PERMISSIONS.LOG_VIEW_ALL_BRANCH, description: 'Melihat Log Aktivitas Seluruh Cabang (Superadmin)' },
     { code: PERMISSIONS.DEVICE_VIEW, description: 'Melihat Kiosk Device' },
     { code: PERMISSIONS.DEVICE_MANAGE, description: 'Kelola Kiosk Device' },
+    { code: PERMISSIONS.SETTING_MANAGE, description: 'Kelola Pengaturan (Waktu Sesi Foto, dll)' },
   ];
 
   for (const p of permissionList) {
@@ -91,6 +92,7 @@ async function main() {
     PERMISSIONS.REPORT_VIEW,
     PERMISSIONS.LOG_VIEW,
     PERMISSIONS.DEVICE_VIEW,
+    PERMISSIONS.SETTING_MANAGE,
   ];
   for (const perm of allPermissions.filter((p) => adminAllowedCodes.includes(p.code as any))) {
     await prisma.rolePermission.upsert({

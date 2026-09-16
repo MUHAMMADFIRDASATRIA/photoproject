@@ -1,5 +1,6 @@
 import React from 'react';
 import { useKioskStore } from '../store/kioskStore';
+import { SessionCountdown } from './SessionCountdown';
 
 const API_CLOUD_ORIGIN = 'http://localhost:4001';
 
@@ -38,17 +39,19 @@ export const SelectDesignScreen: React.FC = () => {
           </p>
         </div>
 
-        <div className="w-32"></div>
+        <div className="flex w-32 justify-end">
+          <SessionCountdown />
+        </div>
       </div>
 
-      {/* Main Grid: Frame Designs */}
-      <div className="my-auto max-w-6xl mx-auto w-full">
+      {/* Main Track: Frame Designs (scroll kesamping) */}
+      <div className="my-auto max-w-7xl mx-auto w-full">
         {designs.length === 0 ? (
           <div className="rounded-3xl border border-zinc-800 bg-zinc-900/30 p-12 text-center text-zinc-500 text-sm">
             Sedang memuat tema desain untuk frame ini...
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-3xl border border-zinc-800/60 bg-zinc-900/20 p-6 [scrollbar-width:thin] [scrollbar-color:#52525b_#18181b]">
             {designs.map((design) => {
               const isStrip = (selectedFrame?.height ?? 0) > (selectedFrame?.width ?? 0);
               const photoCount = selectedFrame?.photoCount ?? 3;
@@ -57,7 +60,7 @@ export const SelectDesignScreen: React.FC = () => {
                 <div
                   key={design.id}
                   onClick={() => selectDesign(design)}
-                  className="group relative cursor-pointer overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-purple-500/60 hover:bg-zinc-900/90 hover:scale-[1.03] active:scale-[0.99]"
+                  className="group relative w-72 shrink-0 cursor-pointer snap-start overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-purple-500/60 hover:bg-zinc-900/90 hover:scale-[1.03] active:scale-[0.99]"
                 >
                   {/* High fidelity frame mockup card (Background + Neutral Grey Pose Slots + Overlay PNG) */}
                   <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center p-3"
@@ -117,7 +120,7 @@ export const SelectDesignScreen: React.FC = () => {
 
       {/* Footer Info */}
       <div className="text-center text-xs text-zinc-500">
-        Pilih tema artwork yang paling cocok dengan gayamu!
+        Geser ke samping untuk melihat semua tema, lalu pilih artwork yang paling cocok dengan gayamu!
       </div>
     </div>
   );

@@ -6,6 +6,8 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { SuperadminDashboardPage } from './pages/superadmin/SuperadminDashboardPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { FramesPage } from './pages/admin/FramesPage';
+import { FrameFormPage } from './pages/admin/FrameFormPage';
+import { SettingsPage } from './pages/admin/SettingsPage';
 import { DesignsPage } from './pages/admin/DesignsPage';
 import { BranchesPage } from './pages/superadmin/BranchesPage';
 import { UsersPage } from './pages/superadmin/UsersPage';
@@ -129,12 +131,42 @@ function App() {
             }
           />
 
+          {/* Create Frame */}
+          <Route
+            path="frames/new"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.FRAME_CREATE}>
+                <FrameFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Edit Frame */}
+          <Route
+            path="frames/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.FRAME_UPDATE}>
+                <FrameFormPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Designs */}
           <Route
             path="designs"
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.DESIGN_VIEW}>
                 <DesignsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Settings / Konfigurasi */}
+          <Route
+            path="settings"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.SETTING_MANAGE}>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

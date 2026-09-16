@@ -34,3 +34,8 @@ npm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+CLAUDE.md
+
+# Docs (dokumen kerja lokal)
+changelog.md

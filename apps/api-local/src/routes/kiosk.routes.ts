@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { prisma } from '../lib/prisma';
-import { JwtPayload } from '@photobox/shared';
+import { JwtPayload, SETTINGS_KEYS, SETTING_DEFAULTS } from '@photobox/shared';
 import { syncCatalogFromCloud } from '../services/sync.service';
 
 export const kioskRouter = Router();
@@ -178,6 +178,50 @@ kioskRouter.get('/designs', authenticateDevice, async (req: KioskAuthenticatedRe
 });
 
 /**
+ * GET /api/kiosk/settings
+ * Mengambil pengaturan cabang (efektif) untuk mesin kiosk.
+ * Fallback: override cabang → default global → nilai bawaan sistem.
+ */
+kioskRouter.get('/settings', authenticateDevice, async (req: KioskAuthenticatedRequest, res: Response) => {
+  try {
+    const branchId = req.device!.branchId!;
+    const key = SETTINGS_KEYS.PHOTO_SESSION_TIMEOUT_MINUTES;
+
+    // Auto-sync settings dari cloud (non-blocking / resilient)
+    await syncCatalogFromCloud(branchId);
+
+    const rows = await prisma.branchSetting.findMany({
+      where: { key, OR: [{ branchId }, { branchId: null }] },
+    });
+
+    const branchRow = rows.find((r) => r.branchId === branchId);
+    const globalRow = rows.find((r) => r.branchId === null);
+
+    const toMinutes = (row: typeof branchRow) =>
+      row ? Number((row.value as unknown as { minutes?: number })?.minutes) : NaN;
+    const branchMinutes = toMinutes(branchRow);
+    const globalMinutes = toMinutes(globalRow);
+
+    const minutes = Number.isFinite(branchMinutes)
+      ? branchMinutes
+      : Number.isFinite(globalMinutes)
+        ? globalMinutes
+        : SETTING_DEFAULTS.PHOTO_SESSION_TIMEOUT_MINUTES;
+
+    res.json({
+      success: true,
+      data: {
+        photoSessionTimeoutMinutes: Math.max(1, Math.min(120, Math.round(minutes))),
+        source: branchRow ? 'branch' : globalRow ? 'global' : 'default',
+      },
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ success: false, error: 'Gagal memuat pengaturan kiosk.' });
+  }
+});
+
+/**
  * POST /api/kiosk/transactions
  * Membuat transaksi sesi foto baru di mesin kiosk
  */
@@ -200,23 +244,9 @@ kioskRouter.post('/transactions', authenticateDevice, async (req: KioskAuthentic
     // Jumlah lembar cetak (min 1, maks 50) — mempengaruhi harga
     const printCopies = Math.max(1, Math.min(50, Number(copies) || 1));
 
-    // Cari design default jika designId tidak dikirim dulu
-    let selectedDesignId = designId ? Number(designId) : null;
-    if (!selectedDesignId) {
-      const defaultDesign = await prisma.frameDesign.findFirst({
-        where: {
-          frameId: Number(frameId),
-          isActive: true,
-          OR: [{ branchId }, { branchId: null }],
-        },
-      });
-      if (defaultDesign) {
-        selectedDesignId = defaultDesign.id;
-      } else {
-        res.status(400).json({ success: false, error: 'Belum ada desain frame aktif untuk cabang ini.' });
-        return;
-      }
-    }
+    // Desain tema dipilih SETELAH pembayaran lunas (alur kiosk),
+    // jadi transaksi boleh dibuat tanpa designId.
+    const selectedDesignId = designId ? Number(designId) : null;
 
     const amount = frame.price * printCopies;
 

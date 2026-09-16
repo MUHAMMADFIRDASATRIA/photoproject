@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useKioskStore } from '../store/kioskStore';
+import { SessionCountdown } from './SessionCountdown';
 
 export const CameraCaptureScreen: React.FC = () => {
   const {
@@ -11,7 +12,7 @@ export const CameraCaptureScreen: React.FC = () => {
     replaceCapturedPhoto,
     cancelRetake,
     retakeSpecificPhoto,
-    setStep,
+    finalizeSession,
   } = useKioskStore();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -22,6 +23,7 @@ export const CameraCaptureScreen: React.FC = () => {
   const currentPhotoIndex = isRetakeMode ? retakeIndex : capturedPhotos.length; // 0-indexed
 
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [timerSeconds, setTimerSeconds] = useState<number>(5);
   const [isFlashing, setIsFlashing] = useState(false);
   const [hasCameraError, setHasCameraError] = useState(false);
   const [cameraErrorMessage, setCameraErrorMessage] = useState<string | null>(null);
@@ -111,18 +113,18 @@ export const CameraCaptureScreen: React.FC = () => {
     if (photoDataUrl) {
       if (isRetakeMode) {
         replaceCapturedPhoto(retakeIndex, photoDataUrl);
-        setStep('PRINTING');
+        void finalizeSession();
       } else {
         addCapturedPhoto(photoDataUrl);
       }
     }
     setCountdown(null);
-  }, [isRetakeMode, retakeIndex, replaceCapturedPhoto, addCapturedPhoto, currentPhotoIndex, setStep]);
+  }, [isRetakeMode, retakeIndex, replaceCapturedPhoto, addCapturedPhoto, currentPhotoIndex, finalizeSession]);
 
   // Handle countdown trigger
   const startCountdown = () => {
     if (countdown !== null) return;
-    setCountdown(4);
+    setCountdown(timerSeconds);
   };
 
   useEffect(() => {
@@ -141,13 +143,13 @@ export const CameraCaptureScreen: React.FC = () => {
   // Cek jika seluruh foto sudah lengkap (hanya dalam mode capture normal)
   useEffect(() => {
     if (!isRetakeMode && capturedPhotos.length >= totalPhotosNeeded) {
-      // Beri jeda 1 detik lalu lanjut ke cetak
+      // Beri jeda 1 detik lalu langsung finalisasi (komposisi + simpan + QR)
       const t = setTimeout(() => {
-        setStep('PRINTING');
+        void finalizeSession();
       }, 1000);
       return () => clearTimeout(t);
     }
-  }, [isRetakeMode, capturedPhotos.length, totalPhotosNeeded, setStep]);
+  }, [isRetakeMode, capturedPhotos.length, totalPhotosNeeded, finalizeSession]);
 
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-zinc-950 font-sans text-white select-none">
@@ -202,6 +204,11 @@ export const CameraCaptureScreen: React.FC = () => {
           </div>
         )}
 
+        {/* Sisa Waktu Sesi */}
+        <div className="absolute top-6 right-6 z-20">
+          <SessionCountdown />
+        </div>
+
         {/* Live Guide Overlay Card */}
         <div className="absolute top-6 left-6 z-20 flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/70 px-5 py-2.5 backdrop-blur-xl">
           <div className="flex h-3 w-3 rounded-full bg-red-500 animate-pulse"></div>
@@ -216,7 +223,25 @@ export const CameraCaptureScreen: React.FC = () => {
 
         {/* Capture Trigger Button */}
         {countdown === null && (isRetakeMode || currentPhotoIndex < totalPhotosNeeded) && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
+            {/* Pilihan Timer */}
+            <div className="flex items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1.5 backdrop-blur-xl shadow-lg">
+              <span className="mr-1 text-[11px] font-bold text-zinc-400">⏱ Timer</span>
+              {[3, 5, 10].map((sec) => (
+                <button
+                  key={sec}
+                  onClick={() => setTimerSeconds(sec)}
+                  className={`min-w-11 rounded-full px-3 py-1 text-xs font-bold transition ${
+                    timerSeconds === sec
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
+                      : 'text-zinc-300 hover:bg-zinc-800'
+                  }`}
+                >
+                  {sec}s
+                </button>
+              ))}
+            </div>
+
             <button
               onClick={startCountdown}
               className="group flex items-center gap-3 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-1.5 shadow-2xl shadow-indigo-500/40 transition hover:scale-105 active:scale-95"
@@ -228,7 +253,7 @@ export const CameraCaptureScreen: React.FC = () => {
                 <span>
                   {isRetakeMode
                     ? `Siap! Foto Ulang Pose #${retakeIndex + 1}`
-                    : `Siap! Hitung Mundur (Ambil Pose)`}
+                    : 'Siap! Hitung Mundur (Ambil Pose)'}
                 </span>
               </div>
             </button>
