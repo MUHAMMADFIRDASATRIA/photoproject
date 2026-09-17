@@ -91,3 +91,14 @@ export const SETTINGS_KEYS = {
 export const SETTING_DEFAULTS = {
   PHOTO_SESSION_TIMEOUT_MINUTES: 5,
 } as const;
+
+// ============================================================
+// JWT Audience — memisahkan trust domain tiap layanan
+// ============================================================
+// Token yang ditandatangani untuk satu layanan TIDAK boleh diterima layanan
+// lain, sekalipun JWT_SECRET-nya sama (mis. config keliru). Server wajib
+// memverifikasi `audience` saat verify.
+export const JWT_AUDIENCES = {
+  CLOUD: 'photobox:cloud', // Web Dashboard + RBAC cloud
+  LOCAL: 'photobox:local', // Sesi device kiosk (api-local)
+} as const;

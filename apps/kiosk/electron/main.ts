@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron';
+import { app, BrowserWindow, ipcMain, session, safeStorage } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -93,7 +93,7 @@ async function handlePrintPhoto(opts: PrintPhotoRequest) {
     const pdfBuffer = await printWin.webContents.printToPDF({
       printBackground: true,
       pageSize: computePageSizeInches(width, height),
-      margins: { marginType: 'none' },
+      margins: { top: 0, bottom: 0, left: 0, right: 0 },
     });
     printWin.destroy();
     fs.writeFileSync(pdfPath, pdfBuffer);
@@ -144,6 +144,62 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('photobox:print-photo', (_event, opts: PrintPhotoRequest) => handlePrintPhoto(opts));
+
+  ipcMain.handle('photobox:set-device-token', (_event, token: unknown) => saveDeviceToken(token));
+  ipcMain.handle('photobox:get-device-token', () => loadDeviceToken());
+  ipcMain.handle('photobox:clear-device-token', () => clearDeviceToken());
+}
+
+// ---------------------------------------------------------------------------
+// Penyimpanan token device yang aman: terenkripsi via Electron safeStorage
+// (Windows DPAPI / macOS Keychain). Menghindari localStorage yang bisa dicuri
+// lewat XSS. Bila enkripsi OS tak tersedia, token hanya disimpan di memori.
+// ---------------------------------------------------------------------------
+function deviceTokenPath(): string {
+  return path.join(app.getPath('userData'), 'device-session.bin');
+}
+
+let memoryDeviceToken: string | null = null;
+
+function saveDeviceToken(token: unknown): { ok: boolean; persisted: boolean } {
+  const value = typeof token === 'string' ? token : '';
+  if (!value) return { ok: false, persisted: false };
+
+  memoryDeviceToken = value;
+  if (!safeStorage.isEncryptionAvailable()) {
+    console.warn('[Photobox][Security] safeStorage tidak tersedia — token device disimpan di memori saja.');
+    return { ok: true, persisted: false };
+  }
+  try {
+    fs.writeFileSync(deviceTokenPath(), safeStorage.encryptString(value));
+    return { ok: true, persisted: true };
+  } catch (e) {
+    console.error('[Photobox][Security] gagal menyimpan token device terenkripsi:', e);
+    return { ok: true, persisted: false };
+  }
+}
+
+function loadDeviceToken(): string | null {
+  if (memoryDeviceToken) return memoryDeviceToken;
+  try {
+    const p = deviceTokenPath();
+    if (!fs.existsSync(p) || !safeStorage.isEncryptionAvailable()) return null;
+    memoryDeviceToken = safeStorage.decryptString(fs.readFileSync(p));
+    return memoryDeviceToken;
+  } catch {
+    return null;
+  }
+}
+
+function clearDeviceToken(): { ok: boolean } {
+  memoryDeviceToken = null;
+  try {
+    const p = deviceTokenPath();
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  } catch {
+    /* ignore */
+  }
+  return { ok: true };
 }
 
 app.whenReady().then(() => {

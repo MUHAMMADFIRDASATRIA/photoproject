@@ -5,8 +5,8 @@ import { getStoredTheme, storeTheme, themeClass, Theme } from '../lib/theme';
 
 export const LoginPage: React.FC = () => {
   const [theme, setTheme] = useState<Theme>(getStoredTheme);
-  const [username, setUsername] = useState('superadmin');
-  const [password, setPassword] = useState('password');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -173,13 +173,6 @@ export const LoginPage: React.FC = () => {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Credentials Info */}
-          <div className="mt-6 rounded-xl border border-zinc-800/60 bg-zinc-950/40 p-3 text-center">
-            <p className="text-[11px] text-zinc-500">
-              Default Superadmin: <span className="text-indigo-400 font-mono font-medium">superadmin</span> / <span className="text-indigo-400 font-mono font-medium">password</span>
-            </p>
-          </div>
         </div>
 
         <p className="mt-8 text-center text-xs text-zinc-600">

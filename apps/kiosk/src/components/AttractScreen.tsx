@@ -126,7 +126,7 @@ export const AttractScreen: React.FC = () => {
 
               <button
                 onClick={() => {
-                  logoutDevice();
+                  void logoutDevice();
                   setShowConfigModal(false);
                 }}
                 className="w-full rounded-xl bg-red-600/20 border border-red-600/30 py-3 text-xs font-semibold text-red-300 hover:bg-red-600/30 transition"

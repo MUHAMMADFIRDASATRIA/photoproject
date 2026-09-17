@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useKioskStore } from '../store/kioskStore';
 
 export const DeviceLoginScreen: React.FC = () => {
-  const [username, setUsername] = useState('kiosk_gi_01');
-  const [password, setPassword] = useState('password');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -73,7 +73,7 @@ export const DeviceLoginScreen: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="password"
+                placeholder="Password akun device"
                 className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500"
               />
             </div>
@@ -86,12 +86,6 @@ export const DeviceLoginScreen: React.FC = () => {
               {isSubmitting ? 'Menghubungkan...' : 'Aktifkan Mesin Kiosk'}
             </button>
           </form>
-
-          <div className="mt-6 rounded-xl bg-zinc-950/40 p-3 border border-zinc-800/60 text-center">
-            <p className="text-[11px] text-zinc-500">
-              Default device: <span className="text-indigo-400 font-mono font-medium">kiosk_gi_01</span> / <span className="text-indigo-400 font-mono font-medium">password</span>
-            </p>
-          </div>
         </div>
       </div>
     </div>

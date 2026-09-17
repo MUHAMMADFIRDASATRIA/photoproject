@@ -1,8 +1,24 @@
 import { PrismaClient } from '../src/generated/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { PERMISSIONS } from '@photobox/shared';
 
 const prisma = new PrismaClient();
+
+function resolveSeedPassword(): string {
+  const fromEnv = process.env.SEED_PASSWORD?.trim();
+  if (fromEnv) return fromEnv;
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[SECURITY] SEED_PASSWORD wajib di-set pada environment production untuk membuat akun device.'
+    );
+  }
+
+  const generated = crypto.randomBytes(9).toString('base64url');
+  console.warn(`[SECURITY] SEED_PASSWORD tidak di-set. Password akun device di-generate acak (khusus dev): ${generated}`);
+  return generated;
+}
 
 async function main() {
   console.log('🌱 Starting local database seed for Kiosk machine...');
@@ -38,7 +54,7 @@ async function main() {
   });
 
   // 4. Akun Device Kiosk
-  const passwordHash = await bcrypt.hash('password', 10);
+  const passwordHash = await bcrypt.hash(resolveSeedPassword(), 10);
   const kioskUser = await prisma.user.upsert({
     where: { username: 'kiosk_gi_01' },
     update: {
@@ -63,7 +79,7 @@ async function main() {
     create: { name: 'Kiosk-GI-01', branchId: branch1.id, isActive: true, lastSeen: new Date() },
   });
 
-  console.log(`✅ Device account ready: ${kioskUser.username} (Password: password)`);
+  console.log(`✅ Device account ready: ${kioskUser.username}`);
 
   // 5. Frames lokal (Bentuk fisik)
   const frameStrip = await prisma.frame.upsert({

@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { composePhoto } from '../lib/compose';
 import { isDesktop } from '../lib/desktop';
 import { loadDeviceSettings as loadDeviceSettingsLocal } from '../lib/deviceSettings';
+import { clearDeviceToken, purgeLegacyToken, saveDeviceToken } from '../lib/secureToken';
 
 export type KioskStep =
   | 'DEVICE_LOGIN'
@@ -83,8 +84,8 @@ interface KioskState {
   setStep: (step: KioskStep) => void;
   setPrintCopies: (copies: number) => void;
   loginDevice: (username: string, password: string) => Promise<boolean>;
-  logoutDevice: () => void;
-  initDevice: () => void;
+  logoutDevice: () => Promise<void>;
+  initDevice: () => Promise<void>;
   fetchFrames: () => Promise<void>;
   fetchSettings: () => Promise<void>;
   loadDeviceSettings: () => void;
@@ -143,21 +144,34 @@ export const useKioskStore = create<KioskState>((set, get) => {
   setStep: (step) => set({ currentStep: step }),
   setPrintCopies: (copies) => set({ printCopies: Math.max(1, copies) }),
 
-  initDevice: () => {
+  initDevice: async () => {
+    // Bersihkan token lama yang sempat tersimpan di localStorage.
+    purgeLegacyToken();
+
     const cachedDevice = localStorage.getItem('kiosk_device_info');
-    const token = localStorage.getItem('kiosk_device_token');
-    if (cachedDevice && token) {
-      const device = JSON.parse(cachedDevice);
-      set({
-        device,
-        currentStep: 'STANDBY',
-      });
-      get().loadDeviceSettings();
-      get().fetchFrames();
-      get().fetchSettings();
-    } else {
+    if (!cachedDevice) {
       set({ currentStep: 'DEVICE_LOGIN' });
+      return;
     }
+
+    // Validasi sesi ke server: browser memakai cookie httpOnly, Electron memakai
+    // token aman. localStorage tidak lagi dipercaya sebagai bukti login.
+    try {
+      const res = await api.get('/me');
+      if (res.data?.success && res.data.data) {
+        set({ device: res.data.data, currentStep: 'STANDBY' });
+        get().loadDeviceSettings();
+        get().fetchFrames();
+        get().fetchSettings();
+        return;
+      }
+    } catch {
+      /* sesi tidak valid / server offline */
+    }
+
+    localStorage.removeItem('kiosk_device_info');
+    await clearDeviceToken();
+    set({ currentStep: 'DEVICE_LOGIN' });
   },
 
   loginDevice: async (username, password) => {
@@ -165,7 +179,8 @@ export const useKioskStore = create<KioskState>((set, get) => {
       const res = await api.post('/login-device', { username, password });
       if (res.data.success) {
         const { token, device } = res.data.data;
-        localStorage.setItem('kiosk_device_token', token);
+        // Token disimpan aman (Electron) / cukup cookie httpOnly (browser).
+        if (token) await saveDeviceToken(token);
         localStorage.setItem('kiosk_device_info', JSON.stringify(device));
         set({
           device,
@@ -183,8 +198,13 @@ export const useKioskStore = create<KioskState>((set, get) => {
     }
   },
 
-  logoutDevice: () => {
-    localStorage.removeItem('kiosk_device_token');
+  logoutDevice: async () => {
+    try {
+      await api.post('/logout-device');
+    } catch {
+      /* abaikan — sesi lokal tetap dibersihkan */
+    }
+    await clearDeviceToken();
     localStorage.removeItem('kiosk_device_info');
     set({
       device: null,

@@ -42,6 +42,12 @@ settingsRouter.get('/', authenticateToken, checkPermission(PERMISSIONS.SETTING_M
 
     const globalMinutes = toMinutes(globalRow?.value);
 
+    // Admin cabang hanya boleh melihat override cabangnya sendiri;
+    // superadmin (tanpa branchScope) melihat semua untuk keperluan kelola global.
+    const visibleOverrides = branchScope
+      ? overrides.filter((o) => o.branchId === branchScope)
+      : overrides;
+
     let effective = null;
     if (branchScope) {
       const branchRow = overrides.find((o) => o.branchId === branchScope);
@@ -54,7 +60,7 @@ settingsRouter.get('/', authenticateToken, checkPermission(PERMISSIONS.SETTING_M
       data: {
         globalMinutes,
         source: globalRow ? 'global' : 'default',
-        overrides: overrides.map((o) => ({
+        overrides: visibleOverrides.map((o) => ({
           branchId: o.branchId,
           branchName: o.branch?.name ?? `Cabang ID ${o.branchId}`,
           minutes: toMinutes(o.value),

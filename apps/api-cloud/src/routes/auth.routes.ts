@@ -2,11 +2,29 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
-import { authenticateToken, AuthenticatedRequest, logActivity } from '../middleware/auth';
-import { JwtPayload } from '@photobox/shared';
+import {
+  authenticateToken,
+  AuthenticatedRequest,
+  logActivity,
+  SESSION_COOKIE,
+} from '../middleware/auth';
+import { JwtPayload, JWT_AUDIENCES } from '@photobox/shared';
+import { getJwtSecret } from '../lib/secret';
 
 export const authRouter = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+
+/** Masa berlaku sesi dashboard (cukup untuk 1 shift kerja, memperkecil dampak token bocor). */
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 jam
+
+function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: SESSION_TTL_MS,
+    path: '/',
+  };
+}
 
 /**
  * POST /api/auth/login
@@ -60,8 +78,12 @@ authRouter.post('/login', async (req: Request, res: Response) => {
       permissions,
     };
 
-    // Generate JWT token (berlaku 7 hari untuk kemudahan operasional)
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+    // Generate JWT token. Nilai token tetap dikembalikan untuk kompatibilitas,
+    // namun klien web-dashboard menyimpannya di cookie httpOnly (anti-XSS).
+    const token = jwt.sign(payload, getJwtSecret(), { expiresIn: '12h', audience: JWT_AUDIENCES.CLOUD });
+
+    // Set sesi sebagai cookie httpOnly — tidak dapat dibaca JavaScript klien.
+    res.cookie(SESSION_COOKIE, token, sessionCookieOptions());
 
     // Catat log aktivitas login
     await logActivity({
@@ -143,4 +165,13 @@ authRouter.get('/me', authenticateToken, async (req: AuthenticatedRequest, res: 
   } catch (error) {
     res.status(500).json({ success: false, error: 'Gagal mengambil data user.' });
   }
+});
+
+/**
+ * POST /api/auth/logout
+ * Menghapus cookie sesi httpOnly di browser.
+ */
+authRouter.post('/logout', (_req: Request, res: Response) => {
+  res.clearCookie(SESSION_COOKIE, { path: '/' });
+  res.json({ success: true, message: 'Berhasil keluar.' });
 });

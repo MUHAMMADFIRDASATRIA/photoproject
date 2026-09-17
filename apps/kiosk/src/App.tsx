@@ -12,7 +12,7 @@ function App() {
   const { currentStep, initDevice } = useKioskStore();
 
   useEffect(() => {
-    initDevice();
+    void initDevice();
   }, [initDevice]);
 
   // Router sederhana berdasarkan state kiosk

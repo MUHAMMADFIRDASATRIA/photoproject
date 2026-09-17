@@ -278,11 +278,10 @@ export const DesignsPage: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const token = localStorage.getItem('photobox_token');
       const res = await axios.post(`${API_ORIGIN}/api/uploads`, formData, {
+        withCredentials: true,
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
         },
       });
 

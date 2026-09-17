@@ -19,6 +19,12 @@ interface BranchOption {
   name: string;
 }
 
+interface UserOption {
+  id: number;
+  username: string;
+  isActive: boolean;
+}
+
 interface PageMeta {
   page: number;
   pageSize: number;
@@ -89,6 +95,7 @@ export const ActivityLogsPage: React.FC = () => {
 
   const [logs, setLogs] = useState<ActivityLogItem[]>([]);
   const [branches, setBranches] = useState<BranchOption[]>([]);
+  const [users, setUsers] = useState<UserOption[]>([]);
   const [meta, setMeta] = useState<PageMeta>({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -97,6 +104,7 @@ export const ActivityLogsPage: React.FC = () => {
   const [actionFilter, setActionFilter] = useState('');
   const [resourceFilter, setResourceFilter] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
+  const [userIdFilter, setUserIdFilter] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(1);
@@ -111,6 +119,15 @@ export const ActivityLogsPage: React.FC = () => {
     }
   }, [canViewAllBranches]);
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await api.get('/activity-logs/users');
+      if (res.data.success) setUsers(res.data.data);
+    } catch {
+      /* abaikan */
+    }
+  }, []);
+
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
     setErrorMsg(null);
@@ -120,6 +137,7 @@ export const ActivityLogsPage: React.FC = () => {
       if (actionFilter) params.action = actionFilter;
       if (resourceFilter) params.resource = resourceFilter;
       if (canViewAllBranches && branchFilter) params.branchId = branchFilter;
+      if (userIdFilter) params.userId = userIdFilter;
       if (fromDate) params.from = fromDate;
       if (toDate) params.to = toDate;
       const res = await api.get('/activity-logs', { params });
@@ -132,11 +150,12 @@ export const ActivityLogsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, meta.pageSize, search, actionFilter, resourceFilter, branchFilter, fromDate, toDate, canViewAllBranches]);
+  }, [page, meta.pageSize, search, actionFilter, resourceFilter, branchFilter, userIdFilter, fromDate, toDate, canViewAllBranches]);
 
   useEffect(() => {
     fetchBranches();
-  }, [fetchBranches]);
+    fetchUsers();
+  }, [fetchBranches, fetchUsers]);
 
   useEffect(() => {
     fetchLogs();
@@ -147,10 +166,16 @@ export const ActivityLogsPage: React.FC = () => {
     setActionFilter('');
     setResourceFilter('');
     setBranchFilter('');
+    setUserIdFilter('');
     setFromDate('');
     setToDate('');
     setPage(1);
   };
+
+  const applyUserFilter = useCallback((userId: number) => {
+    setUserIdFilter(String(userId));
+    setPage(1);
+  }, []);
 
   const totalPages = Math.max(1, meta.totalPages);
 
@@ -215,6 +240,21 @@ export const ActivityLogsPage: React.FC = () => {
               ['auth', 'user', 'role', 'branch', 'frame', 'design', 'setting', 'device'].map((r) => (
                 <option key={r} value={r}>{resourceLabel(r)}</option>
               ))}
+          </select>
+          <select
+            value={userIdFilter}
+            onChange={(e) => {
+              setUserIdFilter(e.target.value);
+              setPage(1);
+            }}
+            className="min-w-[140px] rounded-xl border border-zinc-800 bg-zinc-950/70 px-3 py-2 text-xs text-white outline-none focus:border-indigo-500"
+          >
+            <option value="">Semua Akun</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.username}{!u.isActive ? ' (nonaktif)' : ''}
+              </option>
+            ))}
           </select>
           {canViewAllBranches && (
             <select
@@ -302,7 +342,17 @@ export const ActivityLogsPage: React.FC = () => {
                   <tr key={log.id} className="transition hover:bg-zinc-800/30">
                     <td className="whitespace-nowrap px-6 py-4 text-zinc-400">{formatDate(log.createdAt)}</td>
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-white">{log.user?.username ?? 'Sistem'}</span>
+                      {log.user ? (
+                        <button
+                          onClick={() => applyUserFilter(log.user!.id)}
+                          title={`Lihat semua aktivitas ${log.user!.username}`}
+                          className={`font-semibold text-white transition hover:text-indigo-300 ${userIdFilter === String(log.user!.id) ? 'text-indigo-400' : ''}`}
+                        >
+                          {log.user.username}
+                        </button>
+                      ) : (
+                        <span className="font-semibold text-zinc-400">Sistem</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {log.branch ? (

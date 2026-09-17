@@ -13,7 +13,6 @@ export interface AuthUser {
 
 interface AuthState {
   user: AuthUser | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
@@ -22,20 +21,29 @@ interface AuthState {
   hasPermission: (permissionCode: string) => boolean;
 }
 
+/** Bersihkan sisa token lama (versi sebelumnya menyimpan token di localStorage). */
+function purgeLegacyTokenStorage() {
+  try {
+    localStorage.removeItem('photobox_token');
+    localStorage.removeItem('photobox_user');
+  } catch {
+    /* localStorage tidak tersedia — abaikan */
+  }
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  token: localStorage.getItem('photobox_token'),
-  isAuthenticated: !!localStorage.getItem('photobox_token'),
+  isAuthenticated: false,
   isLoading: true,
 
   login: async (username, password) => {
     try {
       const response = await api.post('/auth/login', { username, password });
       if (response.data.success) {
-        const { token, user } = response.data.data;
-        localStorage.setItem('photobox_token', token);
-        localStorage.setItem('photobox_user', JSON.stringify(user));
-        set({ token, user, isAuthenticated: true, isLoading: false });
+        const { user } = response.data.data;
+        purgeLegacyTokenStorage();
+        // Sesi disimpan pada cookie httpOnly oleh server; hanya profil di state.
+        set({ user, isAuthenticated: true, isLoading: false });
         return true;
       }
       return false;
@@ -46,27 +54,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('photobox_token');
-    localStorage.removeItem('photobox_user');
-    set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+    // Hapus cookie sesi di server, lalu bersihkan state.
+    api.post('/auth/logout').catch(() => undefined);
+    purgeLegacyTokenStorage();
+    set({ user: null, isAuthenticated: false, isLoading: false });
   },
 
   checkAuth: async () => {
-    const token = localStorage.getItem('photobox_token');
-    if (!token) {
-      set({ user: null, isAuthenticated: false, isLoading: false });
-      return;
-    }
-
+    purgeLegacyTokenStorage();
     try {
       const response = await api.get('/auth/me');
       if (response.data.success) {
         set({ user: response.data.data, isAuthenticated: true, isLoading: false });
       } else {
-        get().logout();
+        set({ user: null, isAuthenticated: false, isLoading: false });
       }
     } catch {
-      get().logout();
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 

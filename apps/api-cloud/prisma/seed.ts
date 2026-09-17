@@ -1,8 +1,26 @@
 import { PrismaClient } from '../src/generated/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { PERMISSIONS } from '@photobox/shared';
 
 const prisma = new PrismaClient();
+
+function resolveSeedPassword(): string {
+  const fromEnv = process.env.SEED_PASSWORD?.trim();
+  if (fromEnv) return fromEnv;
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[SECURITY] SEED_PASSWORD wajib di-set pada environment production untuk membuat akun awal.'
+    );
+  }
+
+  // Mode development: password acak agar tidak ada kredensial 'password' yang
+  // tertanam; operator harus menggantinya sebelum dipakai sungguhan.
+  const generated = crypto.randomBytes(9).toString('base64url');
+  console.warn(`[SECURITY] SEED_PASSWORD tidak di-set. Password akun awal di-generate acak (khusus dev): ${generated}`);
+  return generated;
+}
 
 async function main() {
   console.log('🌱 Starting database seed with Admin accounts & transactions...');
@@ -124,7 +142,8 @@ async function main() {
   });
 
   // 5. Seed Users (Superadmin & Branch Admins)
-  const passwordHash = await bcrypt.hash('password', 10);
+  const seedPassword = resolveSeedPassword();
+  const passwordHash = await bcrypt.hash(seedPassword, 10);
   
   // Superadmin
   await prisma.user.upsert({
@@ -147,7 +166,7 @@ async function main() {
     create: { username: 'admin_paskal', password: passwordHash, roleId: adminRole.id, branchId: branch2.id, isActive: true },
   });
 
-  console.log('✅ Accounts seeded: superadmin, admin_gi, admin_paskal (Password: password)');
+  console.log('✅ Accounts seeded: superadmin, admin_gi, admin_paskal (isi password tak lagi dicetak).');
 
   // 6. Devices (Kiosks)
   await prisma.device.upsert({

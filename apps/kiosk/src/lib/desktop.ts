@@ -30,6 +30,9 @@ export interface PhotoboxDesktopApi {
   isDesktop: boolean;
   getPrinters: () => Promise<DesktopPrinterResponse>;
   printPhoto: (opts: DesktopPrintOptions) => Promise<DesktopPrintResult>;
+  setDeviceToken: (token: string) => Promise<{ ok: boolean; persisted: boolean }>;
+  getDeviceToken: () => Promise<string | null>;
+  clearDeviceToken: () => Promise<{ ok: boolean }>;
 }
 
 declare global {

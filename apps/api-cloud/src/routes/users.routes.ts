@@ -6,6 +6,25 @@ import { PERMISSIONS } from '@photobox/shared';
 
 export const usersRouter = Router();
 
+/**
+ * Kebijakan kekuatan password (poin keamanan): minimal 8 karakter,
+ * memuat huruf besar, huruf kecil, dan angka.
+ */
+function validatePasswordStrength(password: unknown): string | null {
+  const value = typeof password === 'string' ? password : '';
+  if (value.length < 8) return 'Password minimal 8 karakter.';
+  if (!/[a-z]/.test(value)) return 'Password harus mengandung minimal satu huruf kecil.';
+  if (!/[A-Z]/.test(value)) return 'Password harus mengandung minimal satu huruf besar.';
+  if (!/[0-9]/.test(value)) return 'Password harus mengandung minimal satu angka.';
+  return null;
+}
+
+/** Buang field password (hash) sebelum data dikirim ke klien. */
+function withoutPassword<T extends { password?: unknown }>(record: T): Omit<T, 'password'> {
+  const { password: _password, ...safe } = record;
+  return safe;
+}
+
 // GET /api/users — List all users with role and branch relations
 usersRouter.get('/', authenticateToken, checkPermission(PERMISSIONS.USER_VIEW), async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -45,6 +64,12 @@ usersRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.USER_CREATE
       return;
     }
 
+    const passwordError = validatePasswordStrength(password);
+    if (passwordError) {
+      res.status(400).json({ success: false, error: passwordError });
+      return;
+    }
+
     const trimmedUsername = username.trim().toLowerCase();
     const existingUser = await prisma.user.findUnique({ where: { username: trimmedUsername } });
     if (existingUser) {
@@ -55,6 +80,13 @@ usersRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.USER_CREATE
     const role = await prisma.role.findUnique({ where: { id: Number(roleId) } });
     if (!role) {
       res.status(400).json({ success: false, error: 'Role tidak valid.' });
+      return;
+    }
+
+    // Cegah eskalasi hak akses: hanya pemegang izin role.manage (superadmin)
+    // yang boleh membuat akun ber-role superadmin.
+    if (role.name === 'superadmin' && !req.user?.permissions?.includes(PERMISSIONS.ROLE_MANAGE)) {
+      res.status(403).json({ success: false, error: 'Membuat akun superadmin membutuhkan izin role.manage.' });
       return;
     }
 
@@ -120,6 +152,13 @@ usersRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.USER_UPDA
       return;
     }
 
+    // Cegah eskalasi hak akses: hanya pemegang izin role.manage (superadmin) yang
+    // boleh mengubah role pengguna.
+    if (roleId && !req.user?.permissions?.includes(PERMISSIONS.ROLE_MANAGE)) {
+      res.status(403).json({ success: false, error: 'Mengubah role pengguna membutuhkan izin role.manage.' });
+      return;
+    }
+
     const updateData: any = {};
     if (username) updateData.username = username.trim().toLowerCase();
     if (roleId) updateData.roleId = Number(roleId);
@@ -141,7 +180,7 @@ usersRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.USER_UPDA
       details: `Memperbarui akun: "${updated.username}" (Status: ${updated.isActive ? 'Aktif' : 'Nonaktif'})`,
     });
 
-    res.json({ success: true, data: updated });
+    res.json({ success: true, data: withoutPassword(updated) });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Gagal memperbarui data pengguna.' });
   }
@@ -153,8 +192,9 @@ usersRouter.put('/:id/password', authenticateToken, checkPermission(PERMISSIONS.
     const userId = Number(req.params.id);
     const { newPassword } = req.body;
 
-    if (!newPassword || newPassword.length < 6) {
-      res.status(400).json({ success: false, error: 'Password baru minimal 6 karakter.' });
+    const passwordError = validatePasswordStrength(newPassword);
+    if (passwordError) {
+      res.status(400).json({ success: false, error: passwordError });
       return;
     }
 

@@ -4,12 +4,73 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
-import { JwtPayload, SETTINGS_KEYS, SETTING_DEFAULTS } from '@photobox/shared';
+import { JwtPayload, JWT_AUDIENCES, SETTINGS_KEYS, SETTING_DEFAULTS } from '@photobox/shared';
 import { syncCatalogFromCloud } from '../services/sync.service';
+import { getJwtSecret } from '../lib/secret';
+import { createDownloadToken, verifyDownloadToken, DOWNLOAD_TOKEN_TTL_MS } from '../lib/downloadToken';
 
 export const kioskRouter = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+
+export const DEVICE_SESSION_COOKIE = 'photobox_device_session';
+const DEVICE_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 hari
+
+function deviceCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: DEVICE_SESSION_TTL_MS,
+    path: '/',
+  };
+}
+
+/** Escape nilai dinamis sebelum disisipkan ke HTML (mencegah stored XSS). */
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Deteksi tipe gambar dari magic bytes (bukan sekadar prefix data:image). */
+function detectImageType(buf: Buffer): 'png' | 'jpeg' | 'webp' | null {
+  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return 'png';
+  }
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    return 'jpeg';
+  }
+  if (
+    buf.length >= 12 &&
+    buf.subarray(0, 4).toString('ascii') === 'RIFF' &&
+    buf.subarray(8, 12).toString('ascii') === 'WEBP'
+  ) {
+    return 'webp';
+  }
+  return null;
+}
+
+const MAX_PHOTO_BYTES = 15 * 1024 * 1024; // 15 MB per foto
+const MAX_PHOTO_POSES = 50;
+
+/**
+ * Decode data URL foto bertanda tangan menjadi Buffer gambar valid.
+ * Mencegah penulisan data sembarang ke disk lewat /complete (hanya file
+ * yang benar-benar gambar yang diterima).
+ */
+function decodeImageDataUrl(dataUrl: unknown): { buf: Buffer } | null {
+  if (typeof dataUrl !== 'string') return null;
+  const match = /^data:image\/(png|jpeg|jpg|webp);base64,/.exec(dataUrl);
+  if (!match) return null;
+  const buf = Buffer.from(dataUrl.slice(match[0].length), 'base64');
+  if (buf.length === 0 || buf.length > MAX_PHOTO_BYTES) return null;
+  if (!detectImageType(buf)) return null;
+  return { buf };
+}
 
 interface KioskAuthenticatedRequest extends Request {
   device?: JwtPayload;
@@ -27,36 +88,80 @@ function getLocalIp(): string {
   return 'localhost';
 }
 
-function getDownloadBaseUrl(req: Request): string {
-  if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL;
-  const host = req.get('host');
-  if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
-    return `${req.protocol}://${host}`;
-  }
-  return `http://${getLocalIp()}:4000`;
+function getDownloadBaseUrl(): string {
+  // PUBLIC_URL memungkinkan operator memakai domain + HTTPS (mis. https://foto.photobox.id).
+  // JANGAN memakai header Host: nilainya dikendalikan klien sehingga bisa dipalsukan
+  // untuk mengarahkan link QR + token unduhan ke host penyerang (open redirect/leak).
+  const configured = process.env.PUBLIC_URL?.trim();
+  if (configured) return configured.replace(/\/$/, '');
+  return `http://${getLocalIp()}:${process.env.PORT || 4000}`;
 }
 
 function authenticateDevice(req: KioskAuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const bearer =
+    authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const token = bearer || (req.cookies?.[DEVICE_SESSION_COOKIE] as string | undefined) || null;
 
   if (!token) {
     res.status(401).json({ success: false, error: 'Token device tidak ditemukan.' });
     return;
   }
 
+  let decoded: JwtPayload;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    if (!decoded.branchId) {
-      res.status(403).json({ success: false, error: 'Akun device tidak terikat ke cabang.' });
+    decoded = jwt.verify(token, getJwtSecret(), {
+      audience: JWT_AUDIENCES.LOCAL,
+    }) as JwtPayload;
+    if (!Number.isInteger(decoded.userId)) {
+      res.status(403).json({ success: false, error: 'Klaim token device tidak valid.' });
       return;
     }
-
-    req.device = decoded;
-    next();
   } catch {
     res.status(403).json({ success: false, error: 'Token device tidak valid atau kedaluwarsa.' });
+    return;
   }
+
+  // Reload user dari DB tiap request: akun yang dinonaktifkan/cabang diubah
+  // langsung berlaku (token device berumur 7 hari, tidak boleh menjadi tiket abadi).
+  prisma.user
+    .findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        isActive: true,
+        roleId: true,
+        branchId: true,
+        role: {
+          select: {
+            permissions: { select: { permission: { select: { code: true } } } },
+          },
+        },
+      },
+    })
+    .then((user) => {
+      if (!user || !user.isActive) {
+        res.status(401).json({ success: false, error: 'Akun device nonaktif atau tidak ditemukan.' });
+        return;
+      }
+      if (!user.branchId) {
+        res.status(403).json({ success: false, error: 'Akun device tidak terikat ke cabang.' });
+        return;
+      }
+
+      req.device = {
+        userId: user.id,
+        roleId: user.roleId,
+        branchId: user.branchId,
+        permissions: user.role.permissions.map((rp) => rp.permission.code) || decoded.permissions,
+        iat: decoded.iat,
+        exp: decoded.exp,
+      };
+      next();
+    })
+    .catch(() => {
+      res.status(500).json({ success: false, error: 'Terjadi kesalahan saat memverifikasi token device.' });
+    });
 }
 
 /**
@@ -102,12 +207,18 @@ kioskRouter.post('/login-device', async (req: Request, res: Response) => {
       permissions: ['frame.view', 'design.view', 'transaction.view', 'device.view'],
     };
 
-    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign(tokenPayload, getJwtSecret(), { expiresIn: '7d', audience: JWT_AUDIENCES.LOCAL });
+
+    // Sesi device disimpan sebagai cookie httpOnly (anti-XSS).
+    res.cookie(DEVICE_SESSION_COOKIE, token, deviceCookieOptions());
 
     res.json({
       success: true,
       message: 'Login device berhasil.',
       data: {
+        // Cookie httpOnly dipakai browser; token dikembalikan demi klien Electron
+        // (file://) yang tidak menerima cookie SameSite — disimpan lewat
+        // Electron safeStorage, BUKAN localStorage.
         token,
         device: {
           id: user.id,
@@ -122,6 +233,46 @@ kioskRouter.post('/login-device', async (req: Request, res: Response) => {
     console.error('Device login error:', error);
     res.status(500).json({ success: false, error: 'Gagal melakukan otentikasi device.' });
   }
+});
+
+/**
+ * GET /api/kiosk/me
+ * Mengembalikan info device dari sesi cookie/Bearer yang aktif (restore sesi kiosk).
+ */
+kioskRouter.get('/me', authenticateDevice, async (req: KioskAuthenticatedRequest, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.device!.userId },
+      include: { branch: true, role: true },
+    });
+
+    if (!user || !user.isActive) {
+      res.status(401).json({ success: false, error: 'Akun device nonaktif atau tidak ditemukan.' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: user.id,
+        username: user.username,
+        branchId: user.branchId,
+        branchName: user.branch?.name ?? 'Cabang Lokal',
+        branchAddress: user.branch?.address ?? '',
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Gagal mengambil data device.' });
+  }
+});
+
+/**
+ * POST /api/kiosk/logout-device
+ * Menghapus cookie sesi device.
+ */
+kioskRouter.post('/logout-device', (_req: Request, res: Response) => {
+  res.clearCookie(DEVICE_SESSION_COOKIE, { path: '/' });
+  res.json({ success: true, message: 'Device berhasil logout.' });
 });
 
 /**
@@ -313,6 +464,12 @@ kioskRouter.patch('/transactions/:id/design', authenticateDevice, async (req: Ki
       return;
     }
 
+    // Pemilihan tema hanya boleh untuk transaksi yang sudah lunas.
+    if (existing.paymentStatus !== 'paid') {
+      res.status(403).json({ success: false, error: 'Transaksi belum lunas — pilihan desain tidak dapat diubah.' });
+      return;
+    }
+
     const updated = await prisma.transaction.update({
       where: { id: transactionId },
       data: { designId: Number(designId) },
@@ -383,6 +540,32 @@ kioskRouter.post('/transactions/:id/complete', authenticateDevice, async (req: K
       return;
     }
 
+    // State machine: penyelesaian hanya boleh untuk transaksi yang SUDAH lunas.
+    if (existing.paymentStatus !== 'paid') {
+      res.status(403).json({ success: false, error: 'Transaksi belum lunas — tidak dapat diselesaikan.' });
+      return;
+    }
+
+    // Validasi muatan foto SEBELUM menulis apa pun ke disk: hanya gambar asli.
+    if (Array.isArray(photos) && photos.length > MAX_PHOTO_POSES) {
+      res.status(400).json({ success: false, error: `Jumlah foto pose maksimal ${MAX_PHOTO_POSES}.` });
+      return;
+    }
+
+    const compositeImage = compositeDataUrl ? decodeImageDataUrl(compositeDataUrl) : null;
+    if (compositeDataUrl && !compositeImage) {
+      res.status(400).json({ success: false, error: 'Data foto komposit tidak valid atau bukan gambar.' });
+      return;
+    }
+
+    const decodedPoses: (Buffer | null)[] = Array.isArray(photos)
+      ? photos.map((p: unknown) => (typeof p === 'string' && p ? decodeImageDataUrl(p)?.buf ?? null : null))
+      : [];
+    if (decodedPoses.some((b, i) => b === null && typeof photos[i] === 'string' && (photos[i] as string).length > 0)) {
+      res.status(400).json({ success: false, error: 'Salah satu foto pose tidak valid atau bukan gambar.' });
+      return;
+    }
+
     // Update status transaksi ke completed
     const updated = await prisma.transaction.update({
       where: { id: transactionId },
@@ -398,15 +581,18 @@ kioskRouter.post('/transactions/:id/complete', authenticateDevice, async (req: K
     const compositeFileName = `photo_tx_${transactionId}.jpg`;
     const compositeFilePath = path.join(photosDir, compositeFileName);
 
-    if (compositeDataUrl && typeof compositeDataUrl === 'string' && compositeDataUrl.startsWith('data:image')) {
-      const base64Data = compositeDataUrl.replace(/^data:image\/\w+;base64,/, '');
-      fs.writeFileSync(compositeFilePath, Buffer.from(base64Data, 'base64'));
+    if (compositeImage) {
+      fs.writeFileSync(compositeFilePath, compositeImage.buf);
     }
 
-    const downloadBase = getDownloadBaseUrl(req);
+    const downloadBase = getDownloadBaseUrl();
+
+    // Link unduhan publik wajib bertanda tangan (cegah enumerasi id transaksi).
+    const { token: dlToken, exp: dlExp } = createDownloadToken(existing.id, DOWNLOAD_TOKEN_TTL_MS);
+    const dlQuery = `token=${dlToken}&exp=${dlExp}`;
 
     // ====== Foto Komposit (frame/grid) ======
-    const compositeUrl = `${downloadBase}/api/kiosk/photos/${transactionId}/download`;
+    const compositeUrl = `${downloadBase}/api/kiosk/photos/${transactionId}/download?${dlQuery}`;
     let compositePhoto = await prisma.photo.findFirst({
       where: { transactionId: existing.id, kind: 'composite' },
     });
@@ -473,13 +659,12 @@ kioskRouter.post('/transactions/:id/complete', authenticateDevice, async (req: K
         const poseFileName = `photo_tx_${transactionId}_pose_${poseIndex}.jpg`;
         const poseFilePath = path.join(photosDir, poseFileName);
 
-        const rawPose = photos[i];
-        if (rawPose && typeof rawPose === 'string' && rawPose.startsWith('data:image')) {
-          const base64Data = rawPose.replace(/^data:image\/\w+;base64,/, '');
-          fs.writeFileSync(poseFilePath, Buffer.from(base64Data, 'base64'));
+        const poseBuf = decodedPoses[i];
+        if (poseBuf) {
+          fs.writeFileSync(poseFilePath, poseBuf);
         }
 
-        const poseUrl = `${downloadBase}/api/kiosk/photos/${transactionId}/download?raw=true&pose=${poseIndex}`;
+        const poseUrl = `${downloadBase}/api/kiosk/photos/${transactionId}/download?${dlQuery}&raw=true&pose=${poseIndex}`;
         poseUrls.push(poseUrl);
 
         const existingPose = await prisma.photo.findFirst({
@@ -545,6 +730,17 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
     const transactionId = Number(req.params.id);
     const raw = req.query.raw === 'true' || req.query.download === 'true';
     const poseParam = req.query.pose ? Math.max(1, Number(req.query.pose) || 1) : null;
+    const token = typeof req.query.token === 'string' ? req.query.token : undefined;
+    const exp = typeof req.query.exp === 'string' ? req.query.exp : undefined;
+
+    if (!Number.isInteger(transactionId) || transactionId <= 0) {
+      return res.status(400).send('Permintaan tidak valid.');
+    }
+
+    // Wajib bertanda tangan: mencegah enumerasi id transaksi (foto pelanggan).
+    if (!verifyDownloadToken(transactionId, token, exp)) {
+      return res.status(403).send('Link unduhan tidak valid atau sudah kedaluwarsa.');
+    }
 
     const photosDir = path.resolve(__dirname, '../../uploads/photos');
     const compositeFileName = `photo_tx_${transactionId}.jpg`;
@@ -579,7 +775,6 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
     });
 
     const compositeExists = fs.existsSync(compositeFilePath);
-    const compositeImageUrl = `/uploads/photos/${compositeFileName}`;
     const branchName = transaction?.branch?.name || 'Photobox Studio';
     const frameName = transaction?.frame?.name || '';
     const designName = transaction?.design?.name || '';
@@ -588,15 +783,26 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
       ? new Date(transaction.createdAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })
       : new Date().toLocaleString('id-ID');
 
+    // Nilai dinamis wajib di-escape sebelum masuk HTML (cegah stored XSS).
+    const safeBranchName = escapeHtml(branchName);
+    const safeFrameName = escapeHtml(frameName);
+    const safeDesignName = escapeHtml(designName);
+    const safeDateStr = escapeHtml(dateStr);
+
+    // Semua link internal mempertahankan token bertanda tangan.
+    const signedQuery = new URLSearchParams({ token: token as string, exp: exp as string }).toString();
+    const compositeImageUrl = `?${signedQuery}&raw=true`;
+
     // Cek ketersediaan tiap pose sesuai jumlah grid pada frame
     const poses = Array.from({ length: photoCount }).map((_, idx) => {
       const n = idx + 1;
       const exists = fs.existsSync(poseFilePath(n));
+      const poseQuery = `?${signedQuery}&raw=true&pose=${n}`;
       return {
         n,
         exists,
-        thumbUrl: exists ? `/uploads/photos/${poseFileName(n)}` : null,
-        downUrl: `?raw=true&pose=${n}`,
+        thumbUrl: exists ? poseQuery : null,
+        downUrl: poseQuery,
         downName: `photobox_${transactionId}_pose_${n}.jpg`,
       };
     });
@@ -625,12 +831,15 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
     const allPoseUrls = poses.map((p) => `'${p.downUrl}'`).join(', ');
     const allPoseNames = poses.map((p) => `'${p.downName}'`).join(', ');
 
+    // Nonce CSP: mengizinkan hanya skrip inline milik halaman ini (bukan injeksi).
+    const cspNonce = crypto.randomBytes(16).toString('base64');
+
     const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unduh Foto - ${branchName}</title>
+  <title>Unduh Foto - ${safeBranchName}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -643,13 +852,13 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
     <!-- Header -->
     <div class="space-y-1 text-center">
       <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-        ✨ ${branchName}
+        ✨ ${safeBranchName}
       </span>
       <h1 class="text-2xl font-black tracking-tight text-white mt-2">Foto Photobox Kamu</h1>
-      <p class="text-xs text-zinc-400">${dateStr}</p>
+      <p class="text-xs text-zinc-400">${safeDateStr}</p>
       ${
-        frameName || designName
-          ? `<p class="text-xs text-zinc-500">${frameName ? frameName : ''}${frameName && designName ? ' • ' : ''}${designName ? `Tema: ${designName}` : ''}</p>`
+        safeFrameName || safeDesignName
+          ? `<p class="text-xs text-zinc-500">${safeFrameName ? safeFrameName : ''}${safeFrameName && safeDesignName ? ' • ' : ''}${safeDesignName ? `Tema: ${safeDesignName}` : ''}</p>`
           : ''
       }
     </div>
@@ -660,7 +869,7 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
         <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Hasil Frame / Grid</h2>
         ${
           compositeExists
-            ? `<a href="?raw=true" download="photobox_${transactionId}.jpg" class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Unduh Frame HD</a>`
+            ? `<a href="${compositeImageUrl}" download="photobox_${transactionId}.jpg" class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Unduh Frame HD</a>`
             : ''
         }
       </div>
@@ -682,7 +891,7 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
         <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">${poses.length} Pose Foto</h2>
         ${
           poses.some((p) => p.exists)
-            ? `<button onclick="downloadAll()" class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 underline underline-offset-2 cursor-pointer">Unduh Semua</button>`
+            ? `<button id="download-all-btn" class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 underline underline-offset-2 cursor-pointer">Unduh Semua</button>`
             : ''
         }
       </div>
@@ -702,9 +911,9 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
 
   <!-- Footer -->
   <div class="text-center text-[11px] text-zinc-600 py-4">
-    Terima kasih telah berkunjung ke Photobox Studio • ${branchName}
+    Terima kasih telah berkunjung ke Photobox Studio • ${safeBranchName}
   </div>
-  <script>
+  <script nonce="${cspNonce}">
     var poseUrls = [${allPoseUrls}];
     var poseNames = [${allPoseNames}];
     function downloadAll() {
@@ -719,11 +928,32 @@ kioskRouter.get('/photos/:id/download', async (req: Request, res: Response) => {
         }, i * 400);
       });
     }
+    var downloadAllBtn = document.getElementById('download-all-btn');
+    if (downloadAllBtn) downloadAllBtn.addEventListener('click', downloadAll);
   </script>
 </body>
 </html>`;
 
+    // Header keamanan untuk halaman publik: batasi sumber skrip/gambar + cegah framing.
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader(
+      'Content-Security-Policy',
+      [
+        "default-src 'none'",
+        `script-src 'nonce-${cspNonce}' https://cdn.tailwindcss.com`,
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "img-src 'self' data:",
+        "font-src https://fonts.gstatic.com",
+        "connect-src 'self' https://fonts.gstatic.com",
+        "object-src 'none'",
+        "base-uri 'none'",
+        "form-action 'none'",
+        "frame-ancestors 'none'",
+      ].join('; ')
+    );
     res.send(html);
   } catch (error) {
     console.error('Download photo error:', error);

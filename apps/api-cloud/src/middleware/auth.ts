@@ -1,34 +1,91 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { JwtPayload, PERMISSIONS } from '@photobox/shared';
+import { JwtPayload, JWT_AUDIENCES, PERMISSIONS } from '@photobox/shared';
 import { prisma } from '../lib/prisma';
+import { getJwtSecret } from '../lib/secret';
 
 export interface AuthenticatedRequest extends Request {
   user?: JwtPayload;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+export const SESSION_COOKIE = 'photobox_session';
+
+/** Ambil token dari header Bearer, atau fallback ke cookie httpOnly. */
+export function extractToken(req: Request): string | null {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies;
+  return cookies?.[SESSION_COOKIE] ?? null;
+}
 
 /**
- * Middleware untuk memvalidasi JWT token
+ * Middleware untuk memvalidasi JWT token (header Bearer atau cookie httpOnly).
+ * 1) Verifikasi signature + audience (token layanan lain ditolak).
+ * 2) Reload user + permission dari DB setiap request sehingga pencabutan akses
+ *    & penonaktifan akun berlaku seketika (bukan menunggu token kedaluwarsa).
  */
 export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const token = extractToken(req);
 
   if (!token) {
     res.status(401).json({ success: false, error: 'Akses ditolak. Token tidak ditemukan.' });
     return;
   }
 
+  let decoded: JwtPayload;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    req.user = decoded;
-    next();
+    decoded = jwt.verify(token, getJwtSecret(), {
+      audience: JWT_AUDIENCES.CLOUD,
+    }) as JwtPayload;
   } catch (err) {
     res.status(403).json({ success: false, error: 'Token tidak valid atau telah kedaluwarsa.' });
     return;
   }
+
+  const userId = Number(decoded.userId);
+  if (!Number.isInteger(userId)) {
+    res.status(403).json({ success: false, error: 'Klaim token tidak valid.' });
+    return;
+  }
+
+  prisma.user
+    .findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        isActive: true,
+        roleId: true,
+        branchId: true,
+        role: {
+          select: {
+            permissions: {
+              select: { permission: { select: { code: true } } },
+            },
+          },
+        },
+      },
+    })
+    .then((user) => {
+      if (!user || !user.isActive) {
+        res.status(401).json({ success: false, error: 'Akun tidak ditemukan atau nonaktif.' });
+        return;
+      }
+
+      req.user = {
+        userId: user.id,
+        roleId: user.roleId,
+        branchId: user.branchId,
+        permissions: user.role.permissions.map((rp) => rp.permission.code),
+        iat: decoded.iat,
+        exp: decoded.exp,
+      };
+      next();
+    })
+    .catch(() => {
+      res.status(500).json({ success: false, error: 'Terjadi kesalahan saat memverifikasi token.' });
+    });
 }
 
 /**

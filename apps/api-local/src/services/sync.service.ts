@@ -10,8 +10,19 @@ const CLOUD_API_URL = process.env.CLOUD_API_URL || 'http://localhost:4001';
  */
 export async function syncCatalogFromCloud(branchId?: number) {
   try {
-    const url = branchId ? `${CLOUD_API_URL}/api/sync/catalog?branchId=${branchId}` : `${CLOUD_API_URL}/api/sync/catalog`;
-    const res = await axios.get(url, { timeout: 4000 });
+    // Sinkronisasi katalog dilindungi per-machine API key (header x-sync-key).
+    // Scope cabang ditentukan di sisi cloud dari kunci (SYNC_API_KEYS), bukan
+    // dari parameter query — mesin kiosk tidak bisa meng-enumerasi cabang lain.
+    const apiKey = process.env.CLOUD_API_KEY?.trim();
+    if (!apiKey) {
+      console.warn(
+        '[sync] CLOUD_API_KEY belum di-set — sinkronisasi katalog dilewati (mode offline).'
+      );
+      return;
+    }
+
+    const url = `${CLOUD_API_URL}/api/sync/catalog`;
+    const res = await axios.get(url, { timeout: 4000, headers: { 'x-sync-key': apiKey } });
 
     if (res.data?.success && res.data?.data) {
       const { frames = [], designs = [], settings = [] } = res.data.data;
