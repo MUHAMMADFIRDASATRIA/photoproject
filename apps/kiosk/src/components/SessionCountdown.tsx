@@ -27,20 +27,20 @@ export const SessionCountdown: React.FC = () => {
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-2xl border px-4 py-2 backdrop-blur-xl shadow-xl transition-colors ${
+      className={`flex items-center gap-2 rounded-full border px-4 py-1.5 shadow-sm transition-colors ${
         isLow
-          ? 'border-red-500/60 bg-red-500/15 text-red-300 animate-pulse'
-          : 'border-zinc-700/80 bg-zinc-950/70 text-zinc-200'
+          ? 'border-red-400 bg-red-50 text-red-600 animate-pulse'
+          : 'border-amber-300/80 bg-white text-zinc-800'
       }`}
     >
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <div className="text-right">
-        <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Sisa Waktu Sesi</div>
-        <div className="font-mono text-lg font-black leading-none">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Sisa:</span>
+        <span className="font-mono text-sm font-black text-zinc-900">
           {mm}:{ss}
-        </div>
+        </span>
       </div>
     </div>
   );

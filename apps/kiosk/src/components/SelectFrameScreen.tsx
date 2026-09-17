@@ -1,14 +1,50 @@
-import React, { useEffect } from 'react';
-import { useKioskStore } from '../store/kioskStore';
+import React, { useEffect, useState } from 'react';
+import { useKioskStore, FrameItem } from '../store/kioskStore';
+import { KioskBackground } from './KioskBackground';
+import { KioskHeader } from './KioskHeader';
+import { PolaroidMockup } from './PolaroidMockup';
+import { DEFAULT_FRAMES } from '../lib/kioskMockData';
 
 export const SelectFrameScreen: React.FC = () => {
-  const { frames, selectFrame, resetCustomerSession, fetchFrames, printCopies, setPrintCopies } = useKioskStore();
+  const {
+    frames,
+    selectFrame,
+    resetCustomerSession,
+    fetchFrames,
+    selectedFrame,
+    printCopies,
+    setPrintCopies,
+  } = useKioskStore();
 
   useEffect(() => {
-    if (frames.length === 0) {
-      fetchFrames();
+    fetchFrames();
+  }, [fetchFrames]);
+
+  // Utamakan frame yang sudah dibuat di dashboard (http://localhost:3001/frames).
+  // Jika database masih kosong, sediakan fallback default (2R, 4R, STRIP).
+  const displayFrames: FrameItem[] = frames.length > 0 ? frames : DEFAULT_FRAMES;
+
+  // Frame aktif terpilih
+  const [activeFrameId, setActiveFrameId] = useState<number>(() => {
+    if (selectedFrame) return selectedFrame.id;
+    return displayFrames[0]?.id || 101;
+  });
+
+  // Pastikan jika frames berubah dari server, activeFrameId tetap valid
+  useEffect(() => {
+    if (displayFrames.length > 0 && !displayFrames.some((f) => f.id === activeFrameId)) {
+      setActiveFrameId(displayFrames[0].id);
     }
-  }, [frames.length, fetchFrames]);
+  }, [displayFrames, activeFrameId]);
+
+  const currentChosenFrame =
+    displayFrames.find((f) => f.id === activeFrameId) || displayFrames[0];
+
+  const handleContinue = () => {
+    if (currentChosenFrame) {
+      selectFrame(currentChosenFrame);
+    }
+  };
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -19,135 +55,150 @@ export const SelectFrameScreen: React.FC = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen w-screen flex-col justify-between bg-zinc-950 p-10 font-sans text-white select-none">
-      {/* Top Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={resetCustomerSession}
-          className="flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-3 text-xs font-semibold text-zinc-300 backdrop-blur-xl transition hover:bg-zinc-800 hover:text-white"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Batal & Kembali
-        </button>
+    <KioskBackground>
+      {/* Header dengan Stepper Langkah 1 */}
+      <KioskHeader currentStepIndex={1} />
 
-        <div className="text-center">
-          <span className="rounded-full bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 text-xs font-bold text-indigo-400 uppercase tracking-wider">
-            Langkah 1 dari 5
-          </span>
-          <h1 className="mt-2 text-3xl font-black text-white">PILIH BENTUK FRAME</h1>
-        </div>
+      {/* Main Content Area */}
+      <main className="my-auto flex flex-col items-center justify-center px-4 w-full">
+        {/* Judul & Subjudul */}
+        <div className="text-center mb-3 sm:mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-zinc-900 tracking-tight">
+            Pilih Frame
+          </h1>
+          <p className="mt-0.5 text-xs sm:text-sm text-zinc-500 font-medium">
+            Mau cetak foto seperti apa?
+          </p>
 
-        <div className="w-32"></div>
-      </div>
-
-      {/* Main Grid: Frame Layouts */}
-      <div className="my-auto max-w-5xl mx-auto w-full">
-        <p className="text-center text-sm text-zinc-400 mb-5">
-          Pilih ukuran kertas dan jumlah pose foto yang kamu inginkan
-        </p>
-
-        {/* Jumlah Cetakan */}
-        <div className="mx-auto mb-8 flex max-w-xs items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/70 px-5 py-3 shadow-lg">
-          <span className="text-xs font-bold text-zinc-200">Jumlah Cetakan</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setPrintCopies(printCopies - 1)}
-              disabled={printCopies <= 1}
-              className="h-9 w-9 rounded-xl bg-zinc-800 font-black text-white transition hover:bg-zinc-700 active:scale-95 disabled:opacity-30"
-            >
-              −
-            </button>
-            <span className="w-7 text-center text-xl font-black text-white">{printCopies}</span>
-            <button
-              onClick={() => setPrintCopies(printCopies + 1)}
-              className="h-9 w-9 rounded-xl bg-zinc-800 font-black text-white transition hover:bg-zinc-700 active:scale-95"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        {frames.length === 0 ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-3 border-indigo-500 border-t-transparent"></div>
-          </div>
-        ) : (
-          <div className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-3xl border border-zinc-800/60 bg-zinc-900/20 p-6 [scrollbar-width:thin] [scrollbar-color:#52525b_#18181b]">
-            {frames.map((frame) => (
-              <div
-                key={frame.id}
-                onClick={() => selectFrame(frame)}
-                className="group relative w-[440px] shrink-0 cursor-pointer snap-start overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-8 shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:border-indigo-500/60 hover:bg-zinc-900/90 hover:scale-[1.02] active:scale-[0.99]"
+          {/* Kontrol Jumlah Cetakan */}
+          <div className="mx-auto mt-2.5 flex items-center justify-center gap-3 rounded-full border border-zinc-200/90 bg-white px-4 py-1.5 shadow-2xs w-fit">
+            <span className="text-xs font-bold text-zinc-700">Jumlah Cetakan:</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPrintCopies(printCopies - 1)}
+                disabled={printCopies <= 1}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 font-black text-zinc-700 transition hover:bg-zinc-200 active:scale-95 disabled:opacity-30 cursor-pointer text-xs"
               >
-                {/* Glow on hover */}
-                <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-indigo-600/10 blur-[80px] group-hover:bg-indigo-600/25 transition-all"></div>
+                −
+              </button>
+              <span className="w-5 text-center text-sm font-black text-zinc-900">
+                {printCopies}
+              </span>
+              <button
+                onClick={() => setPrintCopies(printCopies + 1)}
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 font-black text-zinc-700 transition hover:bg-zinc-200 active:scale-95 cursor-pointer text-xs"
+              >
+                +
+              </button>
+            </div>
+            {printCopies > 1 && (
+              <span className="text-[11px] font-bold text-amber-600 ml-1">
+                ({printCopies} lembar)
+              </span>
+            )}
+          </div>
+        </div>
 
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 font-bold text-base">
-                      📸
-                    </span>
-                    <div>
-                      <h3 className="text-xl font-bold text-white group-hover:text-indigo-400 transition">
-                        {frame.name}
-                      </h3>
-                      <span className="text-xs text-zinc-400 font-mono">
-                        Dimensi: {frame.width}x{frame.height} px
-                      </span>
+        {/* Daftar Frame Utama dari Dashboard */}
+        <div className="relative w-full max-w-5xl">
+          <div className="flex items-center gap-5 sm:gap-6 overflow-x-auto p-2 px-4 snap-x snap-mandatory [scrollbar-width:none]">
+            {displayFrames.map((frame) => {
+              const isSelected = frame.id === activeFrameId;
+              const photoLabel = `${frame.photoCount} Foto`;
+              const totalPrice = frame.price * printCopies;
+
+              return (
+                <div
+                  key={frame.id}
+                  onClick={() => setActiveFrameId(frame.id)}
+                  className={`group relative flex flex-col items-center justify-between rounded-3xl bg-white p-5 sm:p-6 cursor-pointer transition-all duration-200 w-64 sm:w-72 shrink-0 h-[370px] sm:h-[400px] snap-center ${
+                    isSelected
+                      ? 'border-2.5 border-amber-400 shadow-xl ring-3 ring-amber-400/20 scale-[1.02]'
+                      : 'border border-zinc-200/80 shadow-2xs hover:border-amber-300 hover:shadow-md'
+                  }`}
+                >
+                  {/* Badge Centang Pojok Kanan Atas */}
+                  {isSelected && (
+                    <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-zinc-900 shadow-xs animate-in fade-in zoom-in duration-200">
+                      <svg className="h-4 w-4 stroke-[3.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
+                  )}
+
+                  {/* Mockup Preview Foto Polaroid atau Thumbnail Frame */}
+                  <div className="flex h-44 w-full items-center justify-center overflow-hidden">
+                    {frame.thumbnailUrl ? (
+                      <div className="h-full w-full rounded-xl overflow-hidden bg-zinc-100 p-1 border border-zinc-200/60 shadow-inner flex items-center justify-center">
+                        <img
+                          src={frame.thumbnailUrl}
+                          alt={frame.name}
+                          className="h-full w-auto object-contain rounded-lg"
+                        />
+                      </div>
+                    ) : (
+                      <PolaroidMockup type={frame.name} className="scale-75" />
+                    )}
                   </div>
 
-                  <div className="text-right">
-                    <span className="block rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-400">
-                      {formatRupiah(frame.price * printCopies)}
-                    </span>
+                  {/* Informasi Frame */}
+                  <div className="mt-2 text-center">
+                    <h3 className="text-xl sm:text-2xl font-black text-zinc-900 truncate max-w-[240px]">
+                      {frame.name}
+                    </h3>
+                    <p className="mt-0.5 text-xs text-zinc-500 font-bold">
+                      {photoLabel} • {frame.width}x{frame.height}px
+                    </p>
+                  </div>
+
+                  {/* Tombol Harga Pill */}
+                  <div className="mt-3 w-full">
+                    <div
+                      className={`w-full py-2.5 rounded-full text-center text-base font-extrabold transition-all ${
+                        isSelected
+                          ? 'bg-amber-400 text-zinc-900 shadow-sm'
+                          : 'bg-[#EFECE6] text-zinc-800 group-hover:bg-[#E4E0D7]'
+                      }`}
+                    >
+                      {formatRupiah(totalPrice)}
+                    </div>
                     {printCopies > 1 && (
-                      <span className="mt-1 block text-[10px] text-zinc-500">
+                      <span className="block text-center text-[10px] text-zinc-400 font-bold mt-1">
                         {printCopies} × {formatRupiah(frame.price)}
                       </span>
                     )}
                   </div>
                 </div>
-
-                {/* Frame Slots Preview Wireframe */}
-                <div className="mt-6 flex h-48 w-full items-center justify-center rounded-2xl bg-zinc-950/80 border border-zinc-800/60 p-4">
-                  {(frame.height > frame.width) ? (
-                    /* Portrait → strip layout vertikal */
-                    <div className="flex h-full w-24 flex-col gap-2 rounded-lg bg-zinc-900 p-2 border border-zinc-700 shadow-lg">
-                      {Array.from({ length: frame.photoCount }).map((_, i) => (
-                        <div key={i} className="flex-1 rounded bg-indigo-500/20 border border-dashed border-indigo-400/40 flex items-center justify-center text-[9px] text-indigo-300">Pose {i + 1}</div>
-                      ))}
-                    </div>
-                  ) : (
-                    /* Landscape → grid layout */
-                    <div className="grid h-full w-48 grid-cols-2 gap-2 rounded-lg bg-zinc-900 p-2 border border-zinc-700 shadow-lg">
-                      {Array.from({ length: frame.photoCount }).map((_, i) => (
-                        <div key={i} className="rounded bg-violet-500/20 border border-dashed border-violet-400/40 flex items-center justify-center text-[9px] text-violet-300">Pose {i + 1}</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-6 flex items-center justify-between text-xs text-zinc-400">
-                  <span className="flex items-center gap-1.5">
-                    🎯 Total: <strong className="text-white">{frame.photoCount} Pose Foto</strong>
-                  </span>
-                  <span className="font-semibold text-indigo-400 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                    Pilih Bentuk Ini →
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
 
-      {/* Footer Info */}
-      <div className="text-center text-xs text-zinc-500">
-        Geser ke samping untuk melihat semua pilihan, lalu sentuh bentuk frame untuk lanjut ke pembayaran (QRIS)
-      </div>
-    </div>
+      {/* Navigasi Bawah */}
+      <footer className="flex w-full shrink-0 items-center justify-between px-6 sm:px-12 py-2">
+        {/* Tombol Kembali */}
+        <button
+          onClick={resetCustomerSession}
+          className="flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white px-7 py-2.5 text-sm font-bold text-zinc-700 shadow-2xs transition hover:bg-zinc-50 active:scale-95 cursor-pointer"
+        >
+          <svg className="h-4 w-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Kembali</span>
+        </button>
+
+        {/* Tombol Lanjut */}
+        <button
+          onClick={handleContinue}
+          className="flex items-center gap-2 rounded-full bg-amber-400 px-9 py-2.5 text-sm font-extrabold text-zinc-900 shadow-md transition hover:bg-amber-500 active:scale-95 cursor-pointer"
+        >
+          <span>Lanjut</span>
+          <svg className="h-4 w-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </footer>
+    </KioskBackground>
   );
 };
