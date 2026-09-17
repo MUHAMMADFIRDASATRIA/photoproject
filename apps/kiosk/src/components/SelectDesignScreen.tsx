@@ -1,16 +1,7 @@
 import React from 'react';
 import { useKioskStore } from '../store/kioskStore';
 import { SessionCountdown } from './SessionCountdown';
-
-const API_CLOUD_ORIGIN = 'http://localhost:4001';
-
-/** Resolve gambar URL — jika path relatif (/uploads/...) tambahkan origin API Cloud */
-function resolveImageUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  if (url.startsWith('/uploads/')) return `${API_CLOUD_ORIGIN}${url}`;
-  return url;
-}
+import { DesignPreview } from './DesignPreview';
 
 export const SelectDesignScreen: React.FC = () => {
   const { selectedFrame, designs, selectDesign } = useKioskStore();
@@ -44,68 +35,33 @@ export const SelectDesignScreen: React.FC = () => {
           </div>
         ) : (
           <div className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory rounded-3xl border border-zinc-800/60 bg-zinc-900/20 p-6 [scrollbar-width:thin] [scrollbar-color:#52525b_#18181b]">
-            {designs.map((design) => {
-              const isStrip = (selectedFrame?.height ?? 0) > (selectedFrame?.width ?? 0);
-              const photoCount = selectedFrame?.photoCount ?? 3;
+            {designs.map((design) => (
+              <div
+                key={design.id}
+                onClick={() => selectDesign(design)}
+                className="group relative w-72 shrink-0 cursor-pointer snap-start overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-purple-500/60 hover:bg-zinc-900/90 hover:scale-[1.03] active:scale-[0.99]"
+              >
+                {/* Preview identik dengan mockup /designs: posisi slot, garis, dan lapisan artwork */}
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-950 border border-zinc-800">
+                  <DesignPreview frame={selectedFrame!} design={design} />
 
-              return (
-                <div
-                  key={design.id}
-                  onClick={() => selectDesign(design)}
-                  className="group relative w-72 shrink-0 cursor-pointer snap-start overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-900/50 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-purple-500/60 hover:bg-zinc-900/90 hover:scale-[1.03] active:scale-[0.99]"
-                >
-                  {/* High fidelity frame mockup card (Background + Neutral Grey Pose Slots + Overlay PNG) */}
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center p-3"
-                    style={{
-                      backgroundColor: design.bgColorHex || '#ffffff',
-                      backgroundImage: design.backgroundUrl ? `url(${resolveImageUrl(design.backgroundUrl)})` : undefined,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  >
-                    {/* Neutral Grey Photo Slots */}
-                    {isStrip ? (
-                      <div className="flex h-full w-28 flex-col gap-2 p-1">
-                        {Array.from({ length: photoCount }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="flex flex-1 items-center justify-center rounded bg-zinc-400/80 border border-zinc-500/40 shadow-inner"
-                          >
-                            <span className="text-[10px] font-bold text-zinc-700 opacity-60">Pose {i + 1}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid h-full w-52 grid-cols-2 gap-2 p-1">
-                        {Array.from({ length: photoCount }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="flex flex-1 items-center justify-center rounded bg-zinc-400/80 border border-zinc-500/40 shadow-inner"
-                          >
-                            <span className="text-[10px] font-bold text-zinc-700 opacity-60">Pose {i + 1}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <div className="pointer-events-none absolute inset-0 z-15 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-15 pointer-events-none"></div>
-
-                    <div className="absolute bottom-3 left-3 right-3 z-20">
-                      <span className="text-xs font-bold text-white block drop-shadow">{design.name}</span>
-                      <span className="text-[11px] font-semibold text-emerald-300 drop-shadow">Termasuk Dalam Frame</span>
-                    </div>
-                  </div>
-
-                  {/* Button */}
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-zinc-300">Pilih Desain & Mulai Foto</span>
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-600 text-white shadow-lg shadow-purple-600/30 group-hover:scale-110 transition">
-                      ➔
-                    </span>
+                  <div className="absolute bottom-3 left-3 right-3 z-20">
+                    <span className="text-xs font-bold text-white block drop-shadow">{design.name}</span>
+                    <span className="text-[11px] font-semibold text-emerald-300 drop-shadow">Termasuk Dalam Frame</span>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Button */}
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-300">Pilih Desain & Mulai Foto</span>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-600 text-white shadow-lg shadow-purple-600/30 group-hover:scale-110 transition">
+                    ➔
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
