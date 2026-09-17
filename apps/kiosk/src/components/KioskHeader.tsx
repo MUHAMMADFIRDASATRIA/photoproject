@@ -14,12 +14,12 @@ const STEPS = [
 
 export const KioskHeader: React.FC<KioskHeaderProps> = ({ currentStepIndex }) => {
   return (
-    <header className="flex w-full shrink-0 items-center justify-between px-3 sm:px-6 py-1">
+    <header className="relative flex w-full shrink-0 items-center justify-between px-6 sm:px-12 py-4 min-h-[90px]">
       {/* Kiri: Brand Logo */}
-      <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-transparent">
+      <div className="flex items-center gap-2.5 z-10">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-transparent">
           <svg
-            className="h-7 w-7 text-zinc-900"
+            className="h-8 w-8 text-zinc-900"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -32,11 +32,11 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({ currentStepIndex }) =>
             <circle cx="17.5" cy="9.5" r="0.7" fill="currentColor" />
           </svg>
         </div>
-        <span className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900">PHOTOBOX</span>
+        <span className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900">PHOTOBOX</span>
       </div>
 
-      {/* Tengah: Stepper 5 Langkah */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      {/* Tengah: Stepper 5 Langkah (Presisi Dead Center di Tengah Layar Kiosk) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-2 sm:gap-3 pointer-events-auto">
         {STEPS.map((item, index) => {
           const isDone = item.step < currentStepIndex;
           const isActive = item.step === currentStepIndex;
@@ -46,8 +46,8 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({ currentStepIndex }) =>
               {/* Connector Line */}
               {index > 0 && (
                 <div
-                  className={`h-0.5 w-5 sm:w-8 transition-colors duration-300 rounded-full ${
-                    item.step <= currentStepIndex ? 'bg-amber-400' : 'bg-zinc-300'
+                  className={`h-1 w-8 sm:w-12 transition-colors duration-300 rounded-full mb-4 ${
+                    item.step <= currentStepIndex ? 'bg-amber-400' : 'bg-zinc-300/80'
                   }`}
                 />
               )}
@@ -55,17 +55,17 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({ currentStepIndex }) =>
               {/* Step Circle & Label */}
               <div className="flex flex-col items-center">
                 <div
-                  className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs font-black transition-all ${
+                  className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-sm font-black transition-all ${
                     isDone
-                      ? 'bg-amber-400 text-zinc-900 shadow-2xs'
+                      ? 'bg-amber-400 text-zinc-900 shadow-sm'
                       : isActive
-                      ? 'bg-amber-400 text-zinc-900 ring-2.5 ring-amber-400/30 shadow-xs scale-105'
+                      ? 'bg-amber-400 text-zinc-900 ring-4 ring-amber-400/25 shadow-md scale-110'
                       : 'bg-[#E7E4DC] text-zinc-500 font-bold'
                   }`}
                 >
                   {isDone ? (
                     <svg
-                      className="h-4 w-4 stroke-[3]"
+                      className="h-5 w-5 stroke-[3.2]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -77,8 +77,8 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({ currentStepIndex }) =>
                   )}
                 </div>
                 <span
-                  className={`mt-0.5 text-[11px] tracking-tight transition-colors ${
-                    isActive || isDone ? 'font-bold text-zinc-900' : 'font-semibold text-zinc-400'
+                  className={`mt-1 text-xs sm:text-sm tracking-tight transition-colors ${
+                    isActive || isDone ? 'font-extrabold text-zinc-900' : 'font-bold text-zinc-400'
                   }`}
                 >
                   {item.label}
@@ -90,27 +90,27 @@ export const KioskHeader: React.FC<KioskHeaderProps> = ({ currentStepIndex }) =>
       </div>
 
       {/* Kanan: Doodle Capture Your Happy Moment */}
-      <div className="relative flex flex-col items-center justify-center pr-1">
+      <div className="relative flex flex-col items-center justify-center pr-2 sm:pr-4 z-10">
         <div className="flex flex-col items-center text-center">
-          <span className="font-['Caveat',cursive] text-base sm:text-lg font-bold leading-none text-zinc-800 rotate-[-4deg]">
+          <span className="font-['Caveat',cursive] text-xl sm:text-2xl lg:text-3xl font-bold leading-none text-zinc-900 rotate-[-4deg]">
             Capture
           </span>
-          <span className="font-['Caveat',cursive] text-base sm:text-lg font-bold leading-tight text-zinc-800 rotate-[-4deg]">
+          <span className="font-['Caveat',cursive] text-xl sm:text-2xl lg:text-3xl font-bold leading-tight text-zinc-900 rotate-[-4deg]">
             Your Happy
           </span>
-          <span className="font-['Caveat',cursive] text-base sm:text-lg font-bold leading-none text-zinc-800 rotate-[-4deg]">
+          <span className="font-['Caveat',cursive] text-xl sm:text-2xl lg:text-3xl font-bold leading-none text-zinc-900 rotate-[-4deg]">
             Moment
           </span>
         </div>
 
         {/* Doodle Smiley & Sparkle */}
-        <div className="flex items-center gap-1 text-zinc-800">
-          <svg width="18" height="10" viewBox="0 0 22 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <div className="flex items-center gap-1 text-zinc-900 mt-1">
+          <svg width="28" height="14" viewBox="0 0 22 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M3 3C6 8 16 8 19 3" />
           </svg>
         </div>
-        <div className="absolute -top-1 -right-1.5 text-amber-500">
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor">
+        <div className="absolute -top-1.5 -right-3 text-amber-500">
+          <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor">
             <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5L6 0Z" />
           </svg>
         </div>

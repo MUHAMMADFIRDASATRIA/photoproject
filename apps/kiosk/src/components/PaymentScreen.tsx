@@ -4,6 +4,7 @@ import { useKioskStore } from '../store/kioskStore';
 import { KioskBackground } from './KioskBackground';
 import { KioskHeader } from './KioskHeader';
 import { PolaroidMockup } from './PolaroidMockup';
+import { FrameTemplatePreview } from './FrameTemplatePreview';
 
 export const PaymentScreen: React.FC = () => {
   const {
@@ -96,9 +97,9 @@ export const PaymentScreen: React.FC = () => {
               </h3>
 
               <div className="flex items-center gap-4">
-                {/* Thumbnail Frame */}
-                <div className="h-28 w-20 overflow-hidden rounded-lg bg-zinc-50 p-1.5 border border-zinc-200/80 flex items-center justify-center shadow-inner">
-                  <PolaroidMockup type={selectedFrame?.name || '2R'} className="scale-65" />
+                {/* Thumbnail Frame Putih Otentik */}
+                <div className="h-28 w-20 overflow-hidden rounded-lg bg-zinc-50 p-1 border border-zinc-200/80 flex items-center justify-center shadow-inner">
+                  <FrameTemplatePreview frame={selectedFrame!} />
                 </div>
 
                 <div>

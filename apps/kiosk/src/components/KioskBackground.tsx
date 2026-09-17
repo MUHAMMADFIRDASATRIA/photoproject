@@ -27,11 +27,65 @@ export const KioskBackground: React.FC<{ children: React.ReactNode }> = ({ child
       {/* Polka Dots Kuning Pojok Kanan Bawah */}
       <div className="pointer-events-none absolute right-6 bottom-3 z-0 h-28 w-40 opacity-75">
         <svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full">
-          <pattern id="dot-pattern" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+          <pattern id="dot-pattern-br" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
             <circle cx="4" cy="4" r="2" fill="#F59E0B" />
           </pattern>
-          <rect width="160" height="120" fill="url(#dot-pattern)" />
+          <rect width="160" height="120" fill="url(#dot-pattern-br)" />
         </svg>
+      </div>
+
+      {/* Polka Dots Kuning Pojok Kiri Atas */}
+      <div className="pointer-events-none absolute left-6 top-5 z-0 h-24 w-36 opacity-60">
+        <svg viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full">
+          <pattern id="dot-pattern-tl" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+            <circle cx="4" cy="4" r="2" fill="#FBBF24" />
+          </pattern>
+          <rect width="140" height="100" fill="url(#dot-pattern-tl)" />
+        </svg>
+      </div>
+
+      {/* Ornamen Bintang & Sparkles Mengambang */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {/* Sparkle Atas Kanan */}
+        <div className="absolute top-16 right-72 text-amber-400 opacity-80 animate-pulse">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
+          </svg>
+        </div>
+
+        {/* Sparkle Tengah Kiri */}
+        <div className="absolute top-1/3 left-10 text-amber-500 opacity-70 animate-bounce duration-1000">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
+          </svg>
+        </div>
+
+        {/* Doodle Hati Tengah Kanan */}
+        <div className="absolute top-1/2 right-12 text-amber-400 opacity-60 rotate-12">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+
+        {/* Sparkle Bawah Kanan */}
+        <div className="absolute bottom-20 right-48 text-amber-500 opacity-75">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
+          </svg>
+        </div>
+
+        {/* Doodle Sinar Matahari / Sparkle Bawah Kiri */}
+        <div className="absolute bottom-28 left-20 text-amber-400 opacity-70 rotate-[-15deg]">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <circle cx="12" cy="12" r="5" fill="#FBBF24" />
+            <line x1="12" y1="1" x2="12" y2="4" />
+            <line x1="12" y1="20" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" />
+            <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="4" y2="12" />
+            <line x1="20" y1="12" x2="23" y2="12" />
+          </svg>
+        </div>
       </div>
 
       {/* Konten Utama */}
