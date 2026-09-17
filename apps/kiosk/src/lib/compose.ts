@@ -142,7 +142,10 @@ export async function composePhoto(
       ctx.restore();
     } else {
       drawImageCover(ctx, photoImg, slot.x, slot.y, slot.width, slot.height, radius);
+      ctx.save();
+      ctx.translate(slot.x + slot.width / 2, slot.y + slot.height / 2);
       drawSlotBorder(slot.width, slot.height, radius);
+      ctx.restore();
     }
   }
 
