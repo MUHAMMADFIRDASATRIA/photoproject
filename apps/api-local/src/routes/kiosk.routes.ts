@@ -181,38 +181,47 @@ kioskRouter.get('/designs', authenticateDevice, async (req: KioskAuthenticatedRe
  * GET /api/kiosk/settings
  * Mengambil pengaturan cabang (efektif) untuk mesin kiosk.
  * Fallback: override cabang → default global → nilai bawaan sistem.
+ * Catatan: pilihan kamera & printer kini murni lokal per akun device
+ * (diatur lewat pengaturan di layar login kiosk), bukan dari cloud.
  */
 kioskRouter.get('/settings', authenticateDevice, async (req: KioskAuthenticatedRequest, res: Response) => {
   try {
     const branchId = req.device!.branchId!;
-    const key = SETTINGS_KEYS.PHOTO_SESSION_TIMEOUT_MINUTES;
 
     // Auto-sync settings dari cloud (non-blocking / resilient)
     await syncCatalogFromCloud(branchId);
 
+    const keys = [SETTINGS_KEYS.PHOTO_SESSION_TIMEOUT_MINUTES];
+
     const rows = await prisma.branchSetting.findMany({
-      where: { key, OR: [{ branchId }, { branchId: null }] },
+      where: { key: { in: keys }, OR: [{ branchId }, { branchId: null }] },
     });
 
-    const branchRow = rows.find((r) => r.branchId === branchId);
-    const globalRow = rows.find((r) => r.branchId === null);
+    const pick = (key: string) =>
+      rows.find((r) => r.key === key && r.branchId === branchId) ??
+      rows.find((r) => r.key === key && r.branchId === null) ??
+      null;
 
-    const toMinutes = (row: typeof branchRow) =>
+    const toMinutes = (row: (typeof rows)[number] | null) =>
       row ? Number((row.value as unknown as { minutes?: number })?.minutes) : NaN;
-    const branchMinutes = toMinutes(branchRow);
-    const globalMinutes = toMinutes(globalRow);
 
-    const minutes = Number.isFinite(branchMinutes)
-      ? branchMinutes
-      : Number.isFinite(globalMinutes)
-        ? globalMinutes
-        : SETTING_DEFAULTS.PHOTO_SESSION_TIMEOUT_MINUTES;
+    const timeoutRow = pick(SETTINGS_KEYS.PHOTO_SESSION_TIMEOUT_MINUTES);
+    const timeoutSource =
+      rows.find((r) => r.key === SETTINGS_KEYS.PHOTO_SESSION_TIMEOUT_MINUTES && r.branchId === branchId)
+        ? 'branch'
+        : rows.find((r) => r.key === SETTINGS_KEYS.PHOTO_SESSION_TIMEOUT_MINUTES && r.branchId === null)
+          ? 'global'
+          : 'default';
+
+    const minutes = Number.isFinite(toMinutes(timeoutRow))
+      ? toMinutes(timeoutRow)
+      : SETTING_DEFAULTS.PHOTO_SESSION_TIMEOUT_MINUTES;
 
     res.json({
       success: true,
       data: {
         photoSessionTimeoutMinutes: Math.max(1, Math.min(120, Math.round(minutes))),
-        source: branchRow ? 'branch' : globalRow ? 'global' : 'default',
+        source: timeoutSource,
       },
     });
   } catch (error) {

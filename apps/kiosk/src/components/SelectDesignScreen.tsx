@@ -13,21 +13,13 @@ function resolveImageUrl(url: string | null | undefined): string | null {
 }
 
 export const SelectDesignScreen: React.FC = () => {
-  const { selectedFrame, designs, selectDesign, setStep } = useKioskStore();
+  const { selectedFrame, designs, selectDesign } = useKioskStore();
 
   return (
     <div className="relative flex min-h-screen w-screen flex-col justify-between bg-zinc-950 p-10 font-sans text-white select-none">
       {/* Top Header */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => setStep('SELECT_FRAME')}
-          className="flex items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-3 text-xs font-semibold text-zinc-300 backdrop-blur-xl transition hover:bg-zinc-800 hover:text-white"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Ganti Bentuk Frame
-        </button>
+        <div className="w-40"></div>
 
         <div className="text-center">
           <span className="rounded-full bg-purple-500/15 border border-purple-500/30 px-3 py-1 text-xs font-bold text-purple-400 uppercase tracking-wider">

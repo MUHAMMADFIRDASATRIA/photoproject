@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { api } from '../lib/api';
 import { composePhoto } from '../lib/compose';
 import { isDesktop } from '../lib/desktop';
+import { loadDeviceSettings as loadDeviceSettingsLocal } from '../lib/deviceSettings';
 
 export type KioskStep =
   | 'DEVICE_LOGIN'
@@ -43,6 +44,7 @@ export interface DesignItem {
   priceOverride?: number | null;
   slotBorderColor?: string | null;
   slotBorderWidth?: number | null;
+  backgroundLayer?: 'below' | 'above' | null;
 }
 
 export interface TransactionInfo {
@@ -74,6 +76,8 @@ interface KioskState {
   photoSessionMinutes: number | null;
   sessionDeadline: number | null;
   timerExpired: boolean;
+  cameraDeviceId: string | null;
+  printerName: string | null;
 
   // Actions
   setStep: (step: KioskStep) => void;
@@ -83,6 +87,7 @@ interface KioskState {
   initDevice: () => void;
   fetchFrames: () => Promise<void>;
   fetchSettings: () => Promise<void>;
+  loadDeviceSettings: () => void;
   fetchDesignsForFrame: (frameId: number) => Promise<void>;
   selectFrame: (frame: FrameItem) => void;
   selectDesign: (design: DesignItem) => void;
@@ -132,6 +137,8 @@ export const useKioskStore = create<KioskState>((set, get) => {
   photoSessionMinutes: null,
   sessionDeadline: null,
   timerExpired: false,
+  cameraDeviceId: null,
+  printerName: null,
 
   setStep: (step) => set({ currentStep: step }),
   setPrintCopies: (copies) => set({ printCopies: Math.max(1, copies) }),
@@ -140,10 +147,12 @@ export const useKioskStore = create<KioskState>((set, get) => {
     const cachedDevice = localStorage.getItem('kiosk_device_info');
     const token = localStorage.getItem('kiosk_device_token');
     if (cachedDevice && token) {
+      const device = JSON.parse(cachedDevice);
       set({
-        device: JSON.parse(cachedDevice),
+        device,
         currentStep: 'STANDBY',
       });
+      get().loadDeviceSettings();
       get().fetchFrames();
       get().fetchSettings();
     } else {
@@ -162,6 +171,7 @@ export const useKioskStore = create<KioskState>((set, get) => {
           device,
           currentStep: 'STANDBY',
         });
+        get().loadDeviceSettings();
         get().fetchFrames();
         get().fetchSettings();
         return true;
@@ -202,12 +212,27 @@ export const useKioskStore = create<KioskState>((set, get) => {
   fetchSettings: async () => {
     try {
       const res = await api.get('/settings');
-      if (res.data.success && res.data.data?.photoSessionTimeoutMinutes) {
-        set({ photoSessionMinutes: res.data.data.photoSessionTimeoutMinutes });
+      if (res.data.success && res.data.data) {
+        const data = res.data.data;
+        set({
+          photoSessionMinutes: data.photoSessionTimeoutMinutes ?? 5,
+        });
       }
     } catch (e) {
       console.error('Fetch settings error:', e);
     }
+  },
+
+  /**
+   * Muat pilihan kamera & printer mesin kiosk dari localStorage
+   * (murni lokal tingkat mesin — tidak ada pengaturan per akun/global).
+   */
+  loadDeviceSettings: () => {
+    const selection = loadDeviceSettingsLocal();
+    set({
+      cameraDeviceId: selection.camera?.deviceId ?? null,
+      printerName: selection.printer?.name ?? null,
+    });
   },
 
   startSessionTimer: () => {
@@ -380,7 +405,7 @@ export const useKioskStore = create<KioskState>((set, get) => {
    * komposisi tetap dibuat dari background + overlay desain saja.
    */
   finalizeSession: async () => {
-    const { selectedFrame, selectedDesign, capturedPhotos, printCopies } = get();
+    const { selectedFrame, selectedDesign, capturedPhotos, printCopies, printerName } = get();
     if (!selectedFrame || !selectedDesign) return;
 
     const composed = await composePhoto(selectedFrame, selectedDesign, capturedPhotos);
@@ -397,6 +422,7 @@ export const useKioskStore = create<KioskState>((set, get) => {
           width: composed.width,
           height: composed.height,
           copies: printCopies,
+          printer: printerName || undefined,
         });
       } catch (e) {
         console.error('Auto print error:', e);

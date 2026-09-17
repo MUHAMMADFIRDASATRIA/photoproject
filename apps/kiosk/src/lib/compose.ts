@@ -2,7 +2,7 @@ import { FrameItem, DesignItem } from '../store/kioskStore';
 
 const API_CLOUD_ORIGIN = 'http://localhost:4001';
 
-/** Resolve gambar URL — jika path relatif (/uploads/...) tambahkan origin API Cloud */
+/** Resolve URL relatif (/uploads/...) → origin API Cloud */
 function resolveImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -20,7 +20,7 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
-/** Gambar foto dengan object-cover (crop tengah) agar tidak terdistorsi dan rapi */
+/** Gambar foto object-cover (crop tengah) + sudut membulat */
 function drawImageCover(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
@@ -32,8 +32,8 @@ function drawImageCover(
 ) {
   const imgW = img.naturalWidth || img.width;
   const imgH = img.naturalHeight || img.height;
-  const imgRatio = imgW / imgH;
   const targetRatio = w / h;
+  const imgRatio = imgW / imgH;
   let sx = 0;
   let sy = 0;
   let sw = imgW;
@@ -66,8 +66,8 @@ export interface ComposeResult {
 }
 
 /**
- * Komposisi final: background/warna + foto per pose (sesuai slotConfig) + overlay + watermark.
- * Returns data URL JPEG 0.95.
+ * Komposisi final: background (warna/artwork sesuai layer) + foto per slot + overlay + watermark.
+ * backgroundLayer = 'below' (default): artwork di bawah slot foto; 'above': artwork menutupi slot foto.
  */
 export async function composePhoto(
   frame: FrameItem,
@@ -80,31 +80,39 @@ export async function composePhoto(
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  // Render Background Dasar (Warna)
+  // 1. Warna dasar
   ctx.fillStyle = design.bgColorHex || '#18181b';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Render Background Image / Artwork
-  const bgUrl = resolveImageUrl(design.backgroundUrl);
-  if (bgUrl) {
+  // 2. Render artwork dekoratif jika layer = 'below' (di bawah slot foto)
+  const renderArtwork = async () => {
+    const bgUrl = resolveImageUrl(design.backgroundUrl);
+    if (!bgUrl) return;
     const bgImg = await loadImage(bgUrl);
     if (bgImg && bgImg.naturalWidth > 0) {
       ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
     }
+  };
+  const bgLayer = design.backgroundLayer === 'above' ? 'above' : 'below';
+  if (bgLayer === 'below') {
+    await renderArtwork();
   }
 
-  // Render Foto User di slot-slot yang ditentukan
+  // 3. Render foto user di slot-slot
   const slots = frame.slotsConfig || [];
-  const borderW = design.slotBorderWidth ?? 0;
-  const borderColor = design.slotBorderColor || null;
-  const drawBorder = (w: number, h: number, r: number) => {
-    if (!(borderW > 0) || !borderColor) return;
+  // Preview editor desain memakai `slotBorderWidth * (2 * scale)` (scale = 100/min(nilai terkecil frame)),
+  // jadi ketebalan asli di resolusi penuh = slotBorderWidth * 2 agar proporsinya identik di hasil cetak.
+  const slotBorderW = (design.slotBorderWidth ?? 0) * 2;
+  const slotBorderColor = design.slotBorderColor || null;
+
+  const drawSlotBorder = (w: number, h: number, radius: number) => {
+    if (!(slotBorderW > 0) || !slotBorderColor) return;
     ctx.save();
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = borderW;
+    ctx.strokeStyle = slotBorderColor;
+    ctx.lineWidth = slotBorderW;
     ctx.beginPath();
     if (typeof ctx.roundRect === 'function') {
-      ctx.roundRect(-w / 2, -h / 2, w, h, r);
+      ctx.roundRect(-w / 2, -h / 2, w, h, radius);
     } else {
       ctx.rect(-w / 2, -h / 2, w, h);
     }
@@ -130,23 +138,20 @@ export async function composePhoto(
       ctx.translate(slot.x + slot.width / 2, slot.y + slot.height / 2);
       ctx.rotate(rotation);
       drawImageCover(ctx, photoImg, -slot.width / 2, -slot.height / 2, slot.width, slot.height, radius);
-      drawBorder(slot.width, slot.height, radius);
+      drawSlotBorder(slot.width, slot.height, radius);
       ctx.restore();
     } else {
       drawImageCover(ctx, photoImg, slot.x, slot.y, slot.width, slot.height, radius);
-      ctx.save();
-      ctx.beginPath();
-      if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(slot.x, slot.y, slot.width, slot.height, radius);
-      } else {
-        ctx.rect(slot.x, slot.y, slot.width, slot.height);
-      }
-      ctx.stroke();
-      ctx.restore();
+      drawSlotBorder(slot.width, slot.height, radius);
     }
   }
 
-  // Render Overlay PNG Transparan (jika ada)
+  // 4. Jika backgroundLayer = 'above', gambar artwork menutupi slot foto
+  if (bgLayer === 'above') {
+    await renderArtwork();
+  }
+
+  // 5. Render Overlay PNG transparan (jika ada) — selalu di lapisan paling atas
   const overlayUrl = resolveImageUrl(design.overlayUrl);
   if (overlayUrl && !overlayUrl.includes('placeholder')) {
     const overlayImg = await loadImage(overlayUrl);
@@ -155,8 +160,8 @@ export async function composePhoto(
     }
   }
 
-  // Render Watermark Text
-  if (!bgUrl) {
+  // 6. Watermark text (hanya jika tanpa artwork agar tidak mengganggu dekorasi)
+  if (!resolveImageUrl(design.backgroundUrl)) {
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'center';

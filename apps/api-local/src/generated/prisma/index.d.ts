@@ -11835,6 +11835,7 @@ export namespace Prisma {
     priceOverride: number | null
     slotBorderColor: string | null
     slotBorderWidth: number | null
+    backgroundLayer: string | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11852,6 +11853,7 @@ export namespace Prisma {
     priceOverride: number | null
     slotBorderColor: string | null
     slotBorderWidth: number | null
+    backgroundLayer: string | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11869,6 +11871,7 @@ export namespace Prisma {
     priceOverride: number
     slotBorderColor: number
     slotBorderWidth: number
+    backgroundLayer: number
     isActive: number
     createdAt: number
     updatedAt: number
@@ -11904,6 +11907,7 @@ export namespace Prisma {
     priceOverride?: true
     slotBorderColor?: true
     slotBorderWidth?: true
+    backgroundLayer?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -11921,6 +11925,7 @@ export namespace Prisma {
     priceOverride?: true
     slotBorderColor?: true
     slotBorderWidth?: true
+    backgroundLayer?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -11938,6 +11943,7 @@ export namespace Prisma {
     priceOverride?: true
     slotBorderColor?: true
     slotBorderWidth?: true
+    backgroundLayer?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -12042,6 +12048,7 @@ export namespace Prisma {
     priceOverride: number | null
     slotBorderColor: string | null
     slotBorderWidth: number | null
+    backgroundLayer: string
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -12078,6 +12085,7 @@ export namespace Prisma {
     priceOverride?: boolean
     slotBorderColor?: boolean
     slotBorderWidth?: boolean
+    backgroundLayer?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12099,6 +12107,7 @@ export namespace Prisma {
     priceOverride?: boolean
     slotBorderColor?: boolean
     slotBorderWidth?: boolean
+    backgroundLayer?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12118,6 +12127,7 @@ export namespace Prisma {
     priceOverride?: boolean
     slotBorderColor?: boolean
     slotBorderWidth?: boolean
+    backgroundLayer?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12137,12 +12147,13 @@ export namespace Prisma {
     priceOverride?: boolean
     slotBorderColor?: boolean
     slotBorderWidth?: boolean
+    backgroundLayer?: boolean
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type FrameDesignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "frameId" | "name" | "overlayUrl" | "backgroundUrl" | "bgColorHex" | "thumbnailUrl" | "priceOverride" | "slotBorderColor" | "slotBorderWidth" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["frameDesign"]>
+  export type FrameDesignOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "frameId" | "name" | "overlayUrl" | "backgroundUrl" | "bgColorHex" | "thumbnailUrl" | "priceOverride" | "slotBorderColor" | "slotBorderWidth" | "backgroundLayer" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["frameDesign"]>
   export type FrameDesignInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     branch?: boolean | FrameDesign$branchArgs<ExtArgs>
     frame?: boolean | FrameDefaultArgs<ExtArgs>
@@ -12177,6 +12188,7 @@ export namespace Prisma {
       priceOverride: number | null
       slotBorderColor: string | null
       slotBorderWidth: number | null
+      backgroundLayer: string
       isActive: boolean
       createdAt: Date
       updatedAt: Date
@@ -12617,6 +12629,7 @@ export namespace Prisma {
     readonly priceOverride: FieldRef<"FrameDesign", 'Int'>
     readonly slotBorderColor: FieldRef<"FrameDesign", 'String'>
     readonly slotBorderWidth: FieldRef<"FrameDesign", 'Int'>
+    readonly backgroundLayer: FieldRef<"FrameDesign", 'String'>
     readonly isActive: FieldRef<"FrameDesign", 'Boolean'>
     readonly createdAt: FieldRef<"FrameDesign", 'DateTime'>
     readonly updatedAt: FieldRef<"FrameDesign", 'DateTime'>
@@ -19112,6 +19125,7 @@ export namespace Prisma {
     priceOverride: 'priceOverride',
     slotBorderColor: 'slotBorderColor',
     slotBorderWidth: 'slotBorderWidth',
+    backgroundLayer: 'backgroundLayer',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -19897,6 +19911,7 @@ export namespace Prisma {
     priceOverride?: IntNullableFilter<"FrameDesign"> | number | null
     slotBorderColor?: StringNullableFilter<"FrameDesign"> | string | null
     slotBorderWidth?: IntNullableFilter<"FrameDesign"> | number | null
+    backgroundLayer?: StringFilter<"FrameDesign"> | string
     isActive?: BoolFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeFilter<"FrameDesign"> | Date | string
@@ -19917,6 +19932,7 @@ export namespace Prisma {
     priceOverride?: SortOrderInput | SortOrder
     slotBorderColor?: SortOrderInput | SortOrder
     slotBorderWidth?: SortOrderInput | SortOrder
+    backgroundLayer?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19940,6 +19956,7 @@ export namespace Prisma {
     priceOverride?: IntNullableFilter<"FrameDesign"> | number | null
     slotBorderColor?: StringNullableFilter<"FrameDesign"> | string | null
     slotBorderWidth?: IntNullableFilter<"FrameDesign"> | number | null
+    backgroundLayer?: StringFilter<"FrameDesign"> | string
     isActive?: BoolFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeFilter<"FrameDesign"> | Date | string
@@ -19960,6 +19977,7 @@ export namespace Prisma {
     priceOverride?: SortOrderInput | SortOrder
     slotBorderColor?: SortOrderInput | SortOrder
     slotBorderWidth?: SortOrderInput | SortOrder
+    backgroundLayer?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19985,6 +20003,7 @@ export namespace Prisma {
     priceOverride?: IntNullableWithAggregatesFilter<"FrameDesign"> | number | null
     slotBorderColor?: StringNullableWithAggregatesFilter<"FrameDesign"> | string | null
     slotBorderWidth?: IntNullableWithAggregatesFilter<"FrameDesign"> | number | null
+    backgroundLayer?: StringWithAggregatesFilter<"FrameDesign"> | string
     isActive?: BoolWithAggregatesFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"FrameDesign"> | Date | string
@@ -20966,6 +20985,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20986,6 +21006,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21001,6 +21022,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21021,6 +21043,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21039,6 +21062,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21053,6 +21077,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21070,6 +21095,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22175,6 +22201,7 @@ export namespace Prisma {
     priceOverride?: SortOrder
     slotBorderColor?: SortOrder
     slotBorderWidth?: SortOrder
+    backgroundLayer?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22200,6 +22227,7 @@ export namespace Prisma {
     priceOverride?: SortOrder
     slotBorderColor?: SortOrder
     slotBorderWidth?: SortOrder
+    backgroundLayer?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22217,6 +22245,7 @@ export namespace Prisma {
     priceOverride?: SortOrder
     slotBorderColor?: SortOrder
     slotBorderWidth?: SortOrder
+    backgroundLayer?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23918,6 +23947,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23936,6 +23966,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24257,6 +24288,7 @@ export namespace Prisma {
     priceOverride?: IntNullableFilter<"FrameDesign"> | number | null
     slotBorderColor?: StringNullableFilter<"FrameDesign"> | string | null
     slotBorderWidth?: IntNullableFilter<"FrameDesign"> | number | null
+    backgroundLayer?: StringFilter<"FrameDesign"> | string
     isActive?: BoolFilter<"FrameDesign"> | boolean
     createdAt?: DateTimeFilter<"FrameDesign"> | Date | string
     updatedAt?: DateTimeFilter<"FrameDesign"> | Date | string
@@ -25093,6 +25125,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25111,6 +25144,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25550,6 +25584,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25569,6 +25604,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25722,6 +25758,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25741,6 +25778,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26375,6 +26413,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26539,6 +26578,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26557,6 +26597,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26574,6 +26615,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26918,6 +26960,7 @@ export namespace Prisma {
     priceOverride?: number | null
     slotBorderColor?: string | null
     slotBorderWidth?: number | null
+    backgroundLayer?: string
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26945,6 +26988,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26963,6 +27007,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26980,6 +27025,7 @@ export namespace Prisma {
     priceOverride?: NullableIntFieldUpdateOperationsInput | number | null
     slotBorderColor?: NullableStringFieldUpdateOperationsInput | string | null
     slotBorderWidth?: NullableIntFieldUpdateOperationsInput | number | null
+    backgroundLayer?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

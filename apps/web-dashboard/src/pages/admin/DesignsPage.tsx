@@ -43,6 +43,7 @@ interface DesignItem {
   priceOverride: number | null;
   slotBorderColor?: string | null;
   slotBorderWidth?: number | null;
+  backgroundLayer?: 'below' | 'above' | null;
   isActive: boolean;
   updatedAt: string;
   branch?: BranchOption | null;
@@ -57,6 +58,7 @@ interface DesignForm {
   bgColorHex: string;
   slotBorderColor: string | null;
   slotBorderWidth: number | null;
+  backgroundLayer: 'below' | 'above';
   isActive: boolean;
 }
 
@@ -68,6 +70,7 @@ const emptyForm: DesignForm = {
   bgColorHex: '#FFFFFF',
   slotBorderColor: '#EF4444',
   slotBorderWidth: 2,
+  backgroundLayer: 'below',
   isActive: true,
 };
 
@@ -88,6 +91,7 @@ function FrameDesignMockup({
   overlayUrl,
   slotBorderColor,
   slotBorderWidth,
+  backgroundLayer,
 }: {
   frame?: FrameOption | null;
   backgroundUrl?: string | null;
@@ -95,6 +99,7 @@ function FrameDesignMockup({
   overlayUrl?: string | null;
   slotBorderColor?: string | null;
   slotBorderWidth?: number | null;
+  backgroundLayer?: 'below' | 'above' | null;
 }) {
   const width = frame?.width ?? 600;
   const height = frame?.height ?? 1050;
@@ -108,15 +113,21 @@ function FrameDesignMockup({
   const scale = 100 / Math.min(width, height);
 
   return (
-    <div
-      className="relative flex h-full w-full items-center justify-center overflow-hidden p-3 select-none transition-all shadow-inner"
-      style={{
-        backgroundColor: bgColorHex || '#ffffff',
-        backgroundImage: resolvedBg ? `url(${resolvedBg})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
+    <div className="flex h-full w-full select-none items-center justify-center p-3">
+      {/* Kanvas preview mempertahankan rasio asli frame (width:height), letterbox di dalam kotak */}
+      <div
+        className="relative overflow-hidden shadow-xl ring-1 ring-black/20"
+        style={{
+          aspectRatio: `${width} / ${height}`,
+          height: '100%',
+          maxHeight: '100%',
+          maxWidth: '100%',
+          backgroundColor: bgColorHex || '#ffffff',
+          backgroundImage: resolvedBg ? `url(${resolvedBg})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
       {slots.map((s, i) => (
         <div
           key={i}
@@ -142,6 +153,18 @@ function FrameDesignMockup({
         </div>
       ))}
 
+      {/* Artwork di atas slot foto — hanya jika backgroundLayer = 'above' (menutupi slot) */}
+      {backgroundLayer === 'above' && resolvedBg && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: `url(${resolvedBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
+
       {/* Overlay artwork — digambar di atas slot (sama seperti komposisi asli saat cetak) */}
       {resolvedOverlay && (
         <div
@@ -153,6 +176,7 @@ function FrameDesignMockup({
           }}
         />
       )}
+      </div>
     </div>
   );
 }
@@ -230,6 +254,7 @@ export const DesignsPage: React.FC = () => {
       bgColorHex: design.bgColorHex ?? '#FFFFFF',
       slotBorderColor: design.slotBorderColor ?? '#EF4444',
       slotBorderWidth: design.slotBorderWidth ?? 2,
+      backgroundLayer: design.backgroundLayer ?? 'below',
       isActive: design.isActive,
     });
     setLocalPreview(null);
@@ -295,6 +320,7 @@ export const DesignsPage: React.FC = () => {
       bgColorHex: form.bgColorHex || '#FFFFFF',
       slotBorderColor: form.slotBorderColor ? form.slotBorderColor.trim() : null,
       slotBorderWidth: form.slotBorderWidth == null || form.slotBorderWidth <= 0 ? null : Math.min(20, Number(form.slotBorderWidth)),
+      backgroundLayer: form.backgroundLayer,
       isActive: form.isActive,
     };
 
@@ -378,17 +404,19 @@ export const DesignsPage: React.FC = () => {
           </p>
         </div>
 
-        {canCreate && (
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-500 active:scale-95"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Tambah Desain
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {canCreate && (
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-500 active:scale-95"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Tambah Desain
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -451,7 +479,7 @@ export const DesignsPage: React.FC = () => {
           {filteredDesigns.map((design) => (
             <div key={design.id} className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/55 shadow-xl shadow-black/10">
               {/* Composite Live Frame Preview */}
-              <div className="relative aspect-[3/4] w-full bg-zinc-950 overflow-hidden">
+              <div className="relative h-64 w-full bg-zinc-950 overflow-hidden">
                 <FrameDesignMockup
                   frame={design.frame}
                   backgroundUrl={design.backgroundUrl}
@@ -664,6 +692,50 @@ export const DesignsPage: React.FC = () => {
                   />
                 </div>
 
+                {/* ─── Lapisan Gambar vs Slot Foto ───────────── */}
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-zinc-400">
+                    Posisi Gambar / Artwork
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, backgroundLayer: 'below' })}
+                      className={`flex flex-col items-start gap-1 rounded-xl border px-3.5 py-2.5 text-left transition ${
+                        form.backgroundLayer === 'below'
+                          ? 'border-indigo-500/60 bg-indigo-500/10 text-white'
+                          : 'border-zinc-800 bg-zinc-950 text-zinc-300 hover:bg-zinc-900'
+                      }`}
+                    >
+                      <span className="text-xs font-bold">
+                        <span className="mr-1.5 inline-block h-3 w-3 rounded-sm border border-current align-[-1px]" />
+                        Di Bawah Slot Foto
+                      </span>
+                      <span className="text-[10px] font-normal leading-snug text-zinc-500">
+                        Foto user menutupi artwork (foto tampil penuh)
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, backgroundLayer: 'above' })}
+                      className={`flex flex-col items-start gap-1 rounded-xl border px-3.5 py-2.5 text-left transition ${
+                        form.backgroundLayer === 'above'
+                          ? 'border-indigo-500/60 bg-indigo-500/10 text-white'
+                          : 'border-zinc-800 bg-zinc-950 text-zinc-300 hover:bg-zinc-900'
+                      }`}
+                    >
+                      <span className="text-xs font-bold">
+                        <span className="mr-1.5 inline-block h-3 w-3 rounded-full border border-current" />
+                        Di Atas Slot Foto
+                      </span>
+                      <span className="text-[10px] font-normal leading-snug text-zinc-500">
+                        Artwork menutupi foto user (foto samar di baliknya)
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-xs font-semibold text-zinc-400">Warna Dasar Frame</label>
@@ -737,13 +809,15 @@ export const DesignsPage: React.FC = () => {
               {/* Right Side: Real-time Live Frame Preview */}
               <div className="space-y-4">
                 <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
-                  <div className="aspect-[3/4] h-80 w-full bg-zinc-950 relative overflow-hidden">
+                  <div className="relative h-80 w-full bg-zinc-950 overflow-hidden">
                     <FrameDesignMockup
                       frame={selectedFrame}
+                      backgroundUrl={form.backgroundUrl}
                       bgColorHex={form.bgColorHex}
                       overlayUrl={editingDesign?.overlayUrl ?? null}
                       slotBorderColor={form.slotBorderColor}
                       slotBorderWidth={form.slotBorderWidth}
+                      backgroundLayer={form.backgroundLayer}
                     />
                   </div>
                   <div className="space-y-1.5 p-4 text-xs">
@@ -770,6 +844,7 @@ export const DesignsPage: React.FC = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

@@ -11,6 +11,7 @@ export const ResultScreen: React.FC = () => {
     capturedPhotos,
     selectedFrame,
     printCopies,
+    printerName,
     retakeSpecificPhoto,
     retakeAllPhotos,
     resetCustomerSession,
@@ -22,6 +23,11 @@ export const ResultScreen: React.FC = () => {
 
   const handleReprint = async () => {
     if (!finalCompositeUrl || reprintState === 'printing') return;
+    if (!desktop) {
+      setReprintState('error');
+      setReprintMsg('Pencetakan hanya tersedia di aplikasi Desktop Kiosk.');
+      return;
+    }
     setReprintState('printing');
     setReprintMsg('');
     try {
@@ -30,6 +36,7 @@ export const ResultScreen: React.FC = () => {
         width: selectedFrame?.width || 1200,
         height: selectedFrame?.height || 1800,
         copies: printCopies,
+        printer: printerName || undefined,
       });
       if (res.ok) {
         setReprintState('idle');
@@ -96,31 +103,32 @@ export const ResultScreen: React.FC = () => {
             Preview Cetak Kertas Foto • 300 DPI
           </span>
 
-          {/* Cetak Ulang (hanya di aplikasi desktop/Electron) */}
-          {desktop && (
-            <div className="mt-3 flex flex-col items-center space-y-1.5">
-              <button
-                onClick={handleReprint}
-                disabled={reprintState === 'printing'}
-                className="flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-bold text-zinc-200 transition hover:bg-zinc-700 active:scale-95 disabled:opacity-40"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                  />
-                </svg>
-                {reprintState === 'printing' ? 'Mencetak ulang...' : 'Cetak Ulang'}
-              </button>
-              {reprintMsg && (
-                <p className={`text-[11px] ${reprintState === 'error' ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {reprintMsg}
-                </p>
-              )}
-            </div>
-          )}
+          {/* Cetak Foto (sebanyak jumlah cetakan yang dipilih saat memilih frame) */}
+          <div className="mt-4 flex w-full flex-col items-center space-y-1.5">
+            <button
+              onClick={handleReprint}
+              disabled={reprintState === 'printing'}
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:brightness-110 active:scale-95 disabled:opacity-50"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                />
+              </svg>
+              {reprintState === 'printing' ? 'Mencetak...' : `Cetak Foto (${printCopies} lembar)`}
+            </button>
+            <p className="text-[10px] text-zinc-500">
+              Mencetak sebanyak jumlah cetakan yang dipilih ({printCopies}x) ke printer terpilih
+            </p>
+            {reprintMsg && (
+              <p className={`text-[11px] ${reprintState === 'error' ? 'text-red-400' : 'text-emerald-400'}`}>
+                {reprintMsg}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Center Column (4 cols): Interactive Pose Retake Panel */}

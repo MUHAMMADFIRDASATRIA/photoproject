@@ -63,6 +63,7 @@ export async function syncCatalogFromCloud(branchId?: number) {
             priceOverride: d.priceOverride,
             slotBorderColor: d.slotBorderColor,
             slotBorderWidth: d.slotBorderWidth,
+            backgroundLayer: d.backgroundLayer ?? 'below',
             isActive: d.isActive,
           },
           create: {
@@ -77,6 +78,7 @@ export async function syncCatalogFromCloud(branchId?: number) {
             priceOverride: d.priceOverride,
             slotBorderColor: d.slotBorderColor,
             slotBorderWidth: d.slotBorderWidth,
+            backgroundLayer: d.backgroundLayer ?? 'below',
             isActive: d.isActive,
           },
         });

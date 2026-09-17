@@ -209,6 +209,7 @@ exports.Prisma.FrameDesignScalarFieldEnum = {
   priceOverride: 'priceOverride',
   slotBorderColor: 'slotBorderColor',
   slotBorderWidth: 'slotBorderWidth',
+  backgroundLayer: 'backgroundLayer',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

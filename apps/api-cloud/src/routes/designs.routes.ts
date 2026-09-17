@@ -54,7 +54,7 @@ designsRouter.get('/', authenticateToken, checkPermission(PERMISSIONS.DESIGN_VIE
  */
 designsRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.DESIGN_CREATE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { name, frameId, branchId: bodyBranchId, backgroundUrl, bgColorHex, isActive, slotBorderColor, slotBorderWidth } = req.body;
+    const { name, frameId, branchId: bodyBranchId, backgroundUrl, bgColorHex, isActive, slotBorderColor, slotBorderWidth, backgroundLayer } = req.body;
 
     if (!name || !frameId) {
       res.status(400).json({ success: false, error: 'Nama desain dan master frame wajib diisi.' });
@@ -112,6 +112,7 @@ designsRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.DESIGN_CR
         priceOverride: null,
         slotBorderColor: slotBorderColor ? String(slotBorderColor).trim() : null,
         slotBorderWidth: slotBorderWidth == null ? null : Math.max(0, Math.min(20, Number(slotBorderWidth))) || null,
+        backgroundLayer: backgroundLayer === 'above' ? 'above' : 'below',
         isActive: isActive === undefined ? true : Boolean(isActive),
       },
       include: { branch: true, frame: true },
@@ -155,7 +156,7 @@ designsRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.DESIGN_
       return;
     }
 
-    const { name, frameId, branchId: bodyBranchId, backgroundUrl, bgColorHex, isActive, slotBorderColor, slotBorderWidth } = req.body;
+    const { name, frameId, branchId: bodyBranchId, backgroundUrl, bgColorHex, isActive, slotBorderColor, slotBorderWidth, backgroundLayer } = req.body;
 
     // Resolve branchId untuk update
     let nextBranchId: number | null;
@@ -198,6 +199,7 @@ designsRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.DESIGN_
         ...(thumbnailUrl !== undefined && { thumbnailUrl }),
         ...(slotBorderColor !== undefined && { slotBorderColor: slotBorderColor ? String(slotBorderColor).trim() : null }),
         ...(slotBorderWidth !== undefined && { slotBorderWidth: slotBorderWidth == null ? null : (Math.max(0, Math.min(20, Number(slotBorderWidth))) || null) }),
+        ...(backgroundLayer !== undefined && { backgroundLayer: backgroundLayer === 'above' ? 'above' : 'below' }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
       },
       include: { branch: true, frame: true },

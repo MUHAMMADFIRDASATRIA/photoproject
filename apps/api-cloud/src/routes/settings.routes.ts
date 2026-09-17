@@ -1,7 +1,11 @@
 import { Router, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, checkPermission, AuthenticatedRequest, logActivity } from '../middleware/auth';
-import { PERMISSIONS, SETTINGS_KEYS, SETTING_DEFAULTS } from '@photobox/shared';
+import {
+  PERMISSIONS,
+  SETTINGS_KEYS,
+  SETTING_DEFAULTS,
+} from '@photobox/shared';
 
 export const settingsRouter = Router();
 

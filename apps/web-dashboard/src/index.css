@@ -1,1 +1,53 @@
 @import "tailwindcss";
+
+/* ─── Light Mode ─────────────────────────────────────────────
+   Aplikasi ditulis dark-first (zinc). Tailwind v4 meng-compile semua
+   utility warna memakai CSS variable (--color-*), jadi kita tinggal
+   me-remap token di bawah class .theme-light tanpa mengubah markup. */
+.theme-light {
+  /* permukaan (surface) → terang */
+  --color-zinc-950: #f4f4f5;
+  --color-zinc-900: #ffffff;
+  --color-zinc-800: #e4e4e7;
+  --color-zinc-700: #d4d4d8;
+  --color-zinc-600: #a1a1aa;
+
+  /* teks → gelap (termasuk text-white yang dipakai di permukaan gelap) */
+  --color-white: #18181b;
+  --color-zinc-100: #27272a;
+  --color-zinc-200: #3f3f46;
+  --color-zinc-300: #52525b;
+  --color-zinc-400: #71717a;
+  --color-zinc-500: #8a8a92;
+}
+
+/* Elemen bertinta warna aksen (indigo/violet/emerald, dsb.) harus tetap
+   teks putih walau di light mode. */
+.theme-light .bg-indigo-600,
+.theme-light .bg-indigo-500,
+.theme-light .from-indigo-500,
+.theme-light .to-violet-600,
+.theme-light .bg-violet-600,
+.theme-light .bg-violet-500,
+.theme-light .bg-emerald-500,
+.theme-light .bg-emerald-500\/90,
+.theme-light .bg-amber-500,
+.theme-light .bg-sky-500,
+.theme-light .bg-black\/25,
+.theme-light .bg-black\/40,
+.theme-light .bg-black\/60,
+.theme-light .bg-black\/65 {
+  color: #ffffff !important;
+}
+
+/* Chip status merah transparan: teks merah tua agar tetap terbaca di latar terang */
+.theme-light .bg-red-500\/20 {
+  color: #b91c1c !important;
+}
+
+/* Transisi mulus saat ganti tema */
+.theme-light body,
+.theme-light body * {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+}

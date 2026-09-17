@@ -159,6 +159,7 @@ model FrameDesign {
   priceOverride   Int?     @map("price_override") // Jika tema ini punya harga beda
   slotBorderColor String?  @map("slot_border_color") // Warna garis pinggir slot foto (opsional)
   slotBorderWidth Int?     @map("slot_border_width") // Ketebalan garis pinggir slot foto dalam px (opsional)
+  backgroundLayer String   @default("below") @map("background_layer") // 'below' = artwork di bawah slot foto; 'above' = artwork menutupi slot foto
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

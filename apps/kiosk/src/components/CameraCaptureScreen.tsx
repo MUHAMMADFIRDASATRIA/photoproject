@@ -13,6 +13,7 @@ export const CameraCaptureScreen: React.FC = () => {
     cancelRetake,
     retakeSpecificPhoto,
     finalizeSession,
+    cameraDeviceId,
   } = useKioskStore();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -39,11 +40,17 @@ export const CameraCaptureScreen: React.FC = () => {
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            facingMode: 'user',
-          },
+          video: cameraDeviceId
+            ? {
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                deviceId: { exact: cameraDeviceId },
+              }
+            : {
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                facingMode: 'user',
+              },
           audio: false,
         });
 
@@ -71,7 +78,7 @@ export const CameraCaptureScreen: React.FC = () => {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [cameraDeviceId]);
 
   // Fungsi jepret foto
   const captureFrame = useCallback(() => {

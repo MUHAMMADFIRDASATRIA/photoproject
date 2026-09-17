@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useKioskStore } from '../store/kioskStore';
+import { DeviceSettingsModal } from './DeviceSettingsModal';
 
 export const AttractScreen: React.FC = () => {
   const { device, setStep, logoutDevice, frames } = useKioskStore();
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showDeviceSettings, setShowDeviceSettings] = useState(false);
 
   const minPrice = frames.length > 0 ? Math.min(...frames.map((f) => f.price)) : 35000;
 
@@ -114,6 +116,16 @@ export const AttractScreen: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={() => {
+                  setShowDeviceSettings(true);
+                  setShowConfigModal(false);
+                }}
+                className="w-full rounded-xl bg-indigo-600/20 border border-indigo-600/30 py-3 text-xs font-semibold text-indigo-300 hover:bg-indigo-600/30 transition"
+              >
+                🎥 Pengaturan Perangkat (Kamera & Printer)
+              </button>
+
+              <button
+                onClick={() => {
                   logoutDevice();
                   setShowConfigModal(false);
                 }}
@@ -132,6 +144,8 @@ export const AttractScreen: React.FC = () => {
           </div>
         </div>
       )}
+
+      {showDeviceSettings && <DeviceSettingsModal onClose={() => setShowDeviceSettings(false)} />}
     </div>
   );
 };

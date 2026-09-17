@@ -12,6 +12,7 @@ import { designsRouter } from './routes/designs.routes';
 import { uploadsRouter } from './routes/uploads.routes';
 import { syncRouter } from './routes/sync.routes';
 import { settingsRouter } from './routes/settings.routes';
+import { activityLogsRouter } from './routes/activity-logs.routes';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/api/designs', designsRouter);
 app.use('/api/uploads', uploadsRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/activity-logs', activityLogsRouter);
 
 // Error handler: ubah error multer menjadi JSON agar frontend mendapat pesan jelas
 // (bukan HTML 500 standar Express yang membuat UI menampilkan pesan generik).

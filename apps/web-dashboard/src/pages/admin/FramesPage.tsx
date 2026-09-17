@@ -9,6 +9,7 @@ import {
   FramePreset,
   FRAME_PRESETS,
 } from '../../lib/frames';
+import { downloadFrameTemplate } from '../../lib/frameTemplate';
 
 export type { FrameSlot };
 export { FRAME_PRESETS };
@@ -158,10 +159,12 @@ export const FramesPage: React.FC = () => {
         (statusFilter === 'active' && frame.isActive) ||
         (statusFilter === 'inactive' && !frame.isActive);
 
+      // Frame global (branchId null) berlaku untuk semua cabang, jadi harus ikut
+      // tampil di filter cabang mana pun.
       const matchesBranch =
         branchFilter === 'all' ||
-        (branchFilter === 'global' && !frame.branchId) ||
-        (frame.branchId === Number(branchFilter));
+        !frame.branchId ||
+        frame.branchId === Number(branchFilter);
 
       return matchesSearch && matchesStatus && matchesBranch;
     });
@@ -288,28 +291,29 @@ export const FramesPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-auto flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-zinc-500">
-                    🎨 {frame._count?.designs ?? 0} Desain Artwork
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    {canUpdate && (
-                      <button onClick={() => navigate(`/frames/${frame.id}/edit`)} className="rounded-lg bg-zinc-800 px-3 py-2 text-[11px] font-semibold text-zinc-200 transition hover:bg-zinc-700">
-                        Edit
-                      </button>
-                    )}
-                    {canDelete && frame.isActive && (
-                      <button onClick={() => deactivateFrame(frame)} className="rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">
-                        Nonaktifkan
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button onClick={() => deleteFrame(frame)} className="rounded-lg bg-red-500/10 px-3 py-2 text-[11px] font-semibold text-red-300 transition hover:bg-red-500/20">
-                        Hapus
-                      </button>
-                    )}
-                  </div>
+                <div className="mt-auto flex items-center justify-end gap-2 pt-1">
+                  <button
+                    onClick={() => downloadFrameTemplate(frame)}
+                    className="rounded-lg bg-indigo-500/10 px-3 py-2 text-[11px] font-semibold text-indigo-300 transition hover:bg-indigo-500/20"
+                    title="Unduh template frame (putih, slot kosong)"
+                  >
+                    Unduh Frame
+                  </button>
+                  {canUpdate && (
+                    <button onClick={() => navigate(`/frames/${frame.id}/edit`)} className="rounded-lg bg-zinc-800 px-3 py-2 text-[11px] font-semibold text-zinc-200 transition hover:bg-zinc-700">
+                      Edit
+                    </button>
+                  )}
+                  {canDelete && frame.isActive && (
+                    <button onClick={() => deactivateFrame(frame)} className="rounded-lg bg-amber-500/10 px-3 py-2 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20">
+                      Nonaktifkan
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button onClick={() => deleteFrame(frame)} className="rounded-lg bg-red-500/10 px-3 py-2 text-[11px] font-semibold text-red-300 transition hover:bg-red-500/20">
+                      Hapus
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

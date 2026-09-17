@@ -84,6 +84,7 @@ export interface FrameDesign {
   priceOverride?: number | null; // Harga kustom (opsional)
   slotBorderColor?: string | null; // Warna garis pinggir slot foto (opsional)
   slotBorderWidth?: number | null; // Ketebalan garis pinggir slot foto dalam px (opsional)
+  backgroundLayer?: 'below' | 'above' | null; // 'below' = artwork di bawah slot foto; 'above' = artwork menutupi slot foto
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
