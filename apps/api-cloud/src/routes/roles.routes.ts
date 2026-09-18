@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, checkPermission, AuthenticatedRequest, logActivity } from '../middleware/auth';
 import { PERMISSIONS } from '@photobox/shared';
+import { parseIntParam } from '../utils/number';
 
 export const rolesRouter = Router();
 
@@ -111,7 +112,11 @@ rolesRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.ROLE_MANAGE
 // Sesuai CLAUDE.md §4: role.manage WAJIB di-hardcode terkunci pada role superadmin
 rolesRouter.put('/:id/permissions', authenticateToken, checkPermission(PERMISSIONS.ROLE_MANAGE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const roleId = Number(req.params.id);
+    const roleId = parseIntParam(req.params.id);
+    if (!roleId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const { permissionCodes } = req.body;
 
     if (!Array.isArray(permissionCodes)) {

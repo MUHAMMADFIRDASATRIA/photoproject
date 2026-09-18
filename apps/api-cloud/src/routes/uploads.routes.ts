@@ -2,7 +2,8 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateToken, checkPermission, AuthenticatedRequest } from '../middleware/auth';
+import { PERMISSIONS } from '@photobox/shared';
 
 export const uploadsRouter = Router();
 
@@ -69,6 +70,7 @@ const upload = multer({
 uploadsRouter.post(
   '/',
   authenticateToken,
+  checkPermission(PERMISSIONS.DESIGN_CREATE),
   upload.single('file'),
   (req: AuthenticatedRequest, res: Response) => {
     try {

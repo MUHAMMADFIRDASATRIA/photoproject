@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, checkPermission, AuthenticatedRequest, logActivity } from '../middleware/auth';
 import { PERMISSIONS } from '@photobox/shared';
+import { parseIntParam } from '../utils/number';
 
 export const framesRouter = Router();
 
@@ -51,7 +52,11 @@ framesRouter.get('/', authenticateToken, checkPermission(PERMISSIONS.FRAME_VIEW)
  */
 framesRouter.get('/:id', authenticateToken, checkPermission(PERMISSIONS.FRAME_VIEW), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = parseIntParam(req.params.id);
+    if (!id) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const branchScope = req.user?.branchId;
 
     const frame = await prisma.frame.findFirst({
@@ -163,7 +168,11 @@ framesRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.FRAME_CREA
  */
 framesRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.FRAME_UPDATE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = parseIntParam(req.params.id);
+    if (!id) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const branchScope = req.user?.branchId;
 
     const existing = await prisma.frame.findFirst({
@@ -223,7 +232,11 @@ framesRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.FRAME_UP
  */
 framesRouter.delete('/:id', authenticateToken, checkPermission(PERMISSIONS.FRAME_DELETE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const id = Number(req.params.id);
+    const id = parseIntParam(req.params.id);
+    if (!id) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const branchScope = req.user?.branchId;
 
     const existing = await prisma.frame.findFirst({

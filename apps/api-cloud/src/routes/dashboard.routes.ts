@@ -30,21 +30,22 @@ dashboardRouter.get(
       const totalUsers = await prisma.user.count({ where: { isActive: true } });
 
       // 5. Total Transactions & Revenue
-      const transactions = await prisma.transaction.findMany({
-        select: {
-          amount: true,
-          status: true,
-          paymentStatus: true,
-          createdAt: true,
-          branchId: true,
-        },
+      const revenueAggregate = await prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { OR: [{ paymentStatus: 'paid' }, { status: 'completed' }] }
       });
+      const totalRevenue = revenueAggregate._sum.amount || 0;
+      const totalTransactionCount = await prisma.transaction.count();
 
-      const totalRevenue = transactions
-        .filter((t) => t.paymentStatus === 'paid' || t.status === 'completed')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const totalTransactionCount = transactions.length;
+      const branchRevenues = await prisma.transaction.groupBy({
+        by: ['branchId'],
+        _sum: { amount: true },
+        where: { OR: [{ paymentStatus: 'paid' }, { status: 'completed' }] }
+      });
+      const branchTransactions = await prisma.transaction.groupBy({
+        by: ['branchId'],
+        _count: { id: true }
+      });
 
       // 6. Branch Summaries with Device Status
       const branches = await prisma.branch.findMany({
@@ -69,10 +70,8 @@ dashboardRouter.get(
       });
 
       const branchPerformance = branches.map((b) => {
-        const branchTransactions = transactions.filter((t) => t.branchId === b.id);
-        const branchRevenue = branchTransactions
-          .filter((t) => t.paymentStatus === 'paid' || t.status === 'completed')
-          .reduce((sum, t) => sum + t.amount, 0);
+        const bRev = branchRevenues.find(br => br.branchId === b.id);
+        const bTx = branchTransactions.find(bt => bt.branchId === b.id);
 
         return {
           id: b.id,
@@ -82,8 +81,8 @@ dashboardRouter.get(
           activeDevices: b.devices.filter((d) => d.isActive).length,
           designCount: b.frameDesigns.length,
           adminCount: b.users.filter((u) => u.role.name === 'admin').length,
-          totalTransactions: branchTransactions.length,
-          totalRevenue: branchRevenue,
+          totalTransactions: bTx?._count.id || 0,
+          totalRevenue: bRev?._sum.amount || 0,
         };
       });
 
@@ -168,28 +167,34 @@ dashboardRouter.get(
         return;
       }
 
-      // 2. Transaksi cabang ini saja
-      const transactions = await prisma.transaction.findMany({
+      // 2. Transaksi cabang ini saja (aggregates)
+      const aggAll = await prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { branchId, OR: [{ paymentStatus: 'paid' }, { status: 'completed' }] }
+      });
+      const totalRevenue = aggAll._sum.amount || 0;
+      const totalTransactions = await prisma.transaction.count({ where: { branchId } });
+
+      // Transaksi hari ini
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const aggToday = await prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: { branchId, createdAt: { gte: startOfToday }, OR: [{ paymentStatus: 'paid' }, { status: 'completed' }] }
+      });
+      const todayRevenue = aggToday._sum.amount || 0;
+      const todayTransactionsCount = await prisma.transaction.count({ where: { branchId, createdAt: { gte: startOfToday } } });
+      
+      const recentTransactionsList = await prisma.transaction.findMany({
         where: { branchId },
         include: {
           frame: { select: { name: true, code: true } },
           design: { select: { name: true, thumbnailUrl: true } },
         },
         orderBy: { createdAt: 'desc' },
+        take: 6,
       });
-
-      const totalRevenue = transactions
-        .filter((t) => t.paymentStatus === 'paid' || t.status === 'completed')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      // Transaksi hari ini
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
-
-      const todayTransactions = transactions.filter((t) => new Date(t.createdAt) >= startOfToday);
-      const todayRevenue = todayTransactions
-        .filter((t) => t.paymentStatus === 'paid' || t.status === 'completed')
-        .reduce((sum, t) => sum + t.amount, 0);
 
       // 3. Status Kiosk Devices di cabang ini
       const devices = branch.devices.map((d) => ({
@@ -221,8 +226,8 @@ dashboardRouter.get(
           metrics: {
             totalRevenue,
             todayRevenue,
-            totalTransactions: transactions.length,
-            todayTransactions: todayTransactions.length,
+            totalTransactions: totalTransactions,
+            todayTransactions: todayTransactionsCount,
             totalDevices: branch.devices.length,
             activeDevices: branch.devices.filter((d) => d.isActive).length,
             totalDesigns: branch.frameDesigns.length,
@@ -236,7 +241,7 @@ dashboardRouter.get(
             thumbnailUrl: d.thumbnailUrl,
             isActive: d.isActive,
           })),
-          recentTransactions: transactions.slice(0, 6).map((t) => ({
+          recentTransactions: recentTransactionsList.map((t) => ({
             id: t.id,
             frameName: t.frame.name,
             designName: t.design?.name ?? 'Belum pilih tema',

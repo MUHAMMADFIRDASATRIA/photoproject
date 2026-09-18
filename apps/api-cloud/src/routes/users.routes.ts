@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, checkPermission, AuthenticatedRequest, logActivity } from '../middleware/auth';
 import { PERMISSIONS } from '@photobox/shared';
+import { parseIntParam } from '../utils/number';
 
 export const usersRouter = Router();
 
@@ -96,7 +97,7 @@ usersRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.USER_CREATE
       return;
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 12);
     const newUser = await prisma.user.create({
       data: {
         username: trimmedUsername,
@@ -137,7 +138,11 @@ usersRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.USER_CREATE
 // PUT /api/users/:id — Update user profile & status
 usersRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.USER_UPDATE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = parseIntParam(req.params.id);
+    if (!userId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const { username, roleId, branchId, isActive } = req.body;
 
     const existing = await prisma.user.findUnique({ where: { id: userId }, include: { role: true } });
@@ -189,7 +194,11 @@ usersRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.USER_UPDA
 // PUT /api/users/:id/password — Reset user password
 usersRouter.put('/:id/password', authenticateToken, checkPermission(PERMISSIONS.USER_UPDATE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = parseIntParam(req.params.id);
+    if (!userId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const { newPassword } = req.body;
 
     const passwordError = validatePasswordStrength(newPassword);
@@ -204,7 +213,7 @@ usersRouter.put('/:id/password', authenticateToken, checkPermission(PERMISSIONS.
       return;
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(newPassword, 12);
     await prisma.user.update({
       where: { id: userId },
       data: { password: passwordHash },
@@ -228,7 +237,11 @@ usersRouter.put('/:id/password', authenticateToken, checkPermission(PERMISSIONS.
 // DELETE /api/users/:id — Delete user
 usersRouter.delete('/:id', authenticateToken, checkPermission(PERMISSIONS.USER_DELETE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = parseIntParam(req.params.id);
+    if (!userId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
 
     const existing = await prisma.user.findUnique({ where: { id: userId } });
     if (!existing) {

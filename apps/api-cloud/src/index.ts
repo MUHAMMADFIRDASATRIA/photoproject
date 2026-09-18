@@ -108,6 +108,15 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 
+// Global rate limiter
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', globalLimiter);
+
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/dashboard', dashboardRouter);

@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, checkPermission, AuthenticatedRequest, logActivity } from '../middleware/auth';
 import { PERMISSIONS } from '@photobox/shared';
+import { parseIntParam } from '../utils/number';
 
 export const branchesRouter = Router();
 
@@ -64,7 +65,11 @@ branchesRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.BRANCH_C
 // PUT /api/branches/:id — Update branch details or toggle active status
 branchesRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.BRANCH_UPDATE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const branchId = Number(req.params.id);
+    const branchId = parseIntParam(req.params.id as string);
+    if (!branchId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const { name, address, isActive } = req.body;
 
     const existing = await prisma.branch.findUnique({ where: { id: branchId } });
@@ -100,7 +105,11 @@ branchesRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.BRANCH
 // DELETE /api/branches/:id — Delete branch
 branchesRouter.delete('/:id', authenticateToken, checkPermission(PERMISSIONS.BRANCH_DELETE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const branchId = Number(req.params.id);
+    const branchId = parseIntParam(req.params.id);
+    if (!branchId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
 
     const existing = await prisma.branch.findUnique({
       where: { id: branchId },

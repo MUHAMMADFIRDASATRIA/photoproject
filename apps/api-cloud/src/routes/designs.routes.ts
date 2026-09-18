@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, checkPermission, AuthenticatedRequest, logActivity } from '../middleware/auth';
 import { PERMISSIONS } from '@photobox/shared';
+import { parseIntParam } from '../utils/number';
 
 export const designsRouter = Router();
 
@@ -143,7 +144,11 @@ designsRouter.post('/', authenticateToken, checkPermission(PERMISSIONS.DESIGN_CR
  */
 designsRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.DESIGN_UPDATE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const designId = Number(req.params.id);
+    const designId = parseIntParam(req.params.id);
+    if (!designId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const branchScope = req.user?.branchId;
 
     // Admin cabang hanya bisa edit desain miliknya
@@ -225,7 +230,11 @@ designsRouter.put('/:id', authenticateToken, checkPermission(PERMISSIONS.DESIGN_
  */
 designsRouter.delete('/:id', authenticateToken, checkPermission(PERMISSIONS.DESIGN_DELETE), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const designId = Number(req.params.id);
+    const designId = parseIntParam(req.params.id);
+    if (!designId) {
+      res.status(400).json({ success: false, error: 'ID tidak valid.' });
+      return;
+    }
     const branchScope = req.user?.branchId;
     const existing = await prisma.frameDesign.findFirst({
       where: { id: designId, ...(branchScope ? { branchId: branchScope } : {}) },
