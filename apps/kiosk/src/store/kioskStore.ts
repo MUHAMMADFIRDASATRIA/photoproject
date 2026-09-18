@@ -114,10 +114,10 @@ export const useKioskStore = create<KioskState>((set, get) => {
     if (!sessionDeadline || timerExpired) return;
     if (Date.now() >= sessionDeadline) {
       if (currentStep === 'RESULT') {
-        set({ sessionDeadline: null });
+        set({ timerExpired: true });
         return;
       }
-      set({ timerExpired: true, sessionDeadline: null });
+      set({ timerExpired: true });
       void get().finalizeSession();
     }
   }, 1000);
@@ -369,6 +369,7 @@ export const useKioskStore = create<KioskState>((set, get) => {
   },
 
   retakeSpecificPhoto: (index: number) => {
+    if (get().timerExpired) return;
     set({
       retakeIndex: index,
       currentStep: 'CAPTURE',
@@ -376,6 +377,7 @@ export const useKioskStore = create<KioskState>((set, get) => {
   },
 
   retakeAllPhotos: () => {
+    if (get().timerExpired) return;
     set({
       capturedPhotos: [],
       retakeIndex: null,

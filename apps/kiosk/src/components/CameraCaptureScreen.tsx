@@ -8,7 +8,6 @@ import { SAMPLE_FRIENDS_PHOTO } from '../lib/kioskMockData';
 export const CameraCaptureScreen: React.FC = () => {
   const {
     selectedFrame,
-    selectedDesign,
     capturedPhotos,
     retakeIndex,
     addCapturedPhoto,
@@ -162,27 +161,27 @@ export const CameraCaptureScreen: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <main className="my-auto flex flex-col items-center justify-center px-4 w-full">
+      <main className="mt-1 sm:mt-2 mb-auto flex flex-col items-center justify-center px-4 w-full pt-0 pb-2">
         {/* Badge Pill: Ambil Foto */}
-        <div className="mb-2">
-          <span className="rounded-full bg-amber-300/90 px-6 py-1 text-xs sm:text-sm font-bold tracking-wide text-zinc-900 shadow-2xs">
+        <div className="mb-1">
+          <span className="rounded-full bg-amber-300/90 px-5 py-0.5 text-xs font-bold tracking-wide text-zinc-900 shadow-2xs">
             Ambil Foto
           </span>
         </div>
 
         {/* Judul & Subjudul */}
-        <div className="text-center mb-5">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-zinc-900 tracking-tight">
+        <div className="text-center mb-2.5 sm:mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-zinc-900 tracking-tight">
             Siap untuk difoto?
           </h1>
-          <p className="mt-1 text-sm sm:text-base text-zinc-500 font-medium">
+          <p className="mt-0.5 text-xs sm:text-sm text-zinc-500 font-medium">
             Pastikan posisi kamu sudah pas dan senyum ya!
           </p>
         </div>
 
         {/* Banner Mode Retake */}
         {isRetakeMode && (
-          <div className="mb-3 flex items-center gap-3 rounded-full bg-amber-400 px-6 py-2 text-xs sm:text-sm font-bold text-zinc-900 shadow-sm">
+          <div className="mb-3 flex items-center gap-3 rounded-full bg-amber-400 px-6 py-1.5 text-xs sm:text-sm font-bold text-zinc-900 shadow-sm">
             <span>🔄 Sedang Mengambil Ulang Pose #{retakeIndex + 1}</span>
             <button
               onClick={cancelRetake}
@@ -194,18 +193,25 @@ export const CameraCaptureScreen: React.FC = () => {
         )}
 
         {/* 3 Kolom Layout: Instruksi | Kamera Viewfinder + Shutter | Hasil Foto */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch w-full max-w-7xl">
-          {/* Kolom Kiri: Instruksi (3 cols) */}
-          <div className="lg:col-span-3 rounded-3xl bg-white p-6 sm:p-7 border border-zinc-200/80 shadow-sm space-y-7 flex flex-col justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6 items-stretch w-full max-w-[1680px] px-2 sm:px-4">
+          {/* Kolom Kiri: Instruksi (3 cols - Align Top) */}
+          <div className="lg:col-span-3 rounded-3xl bg-white p-5 sm:p-6 border border-zinc-200/80 shadow-md space-y-4 sm:space-y-5 flex flex-col justify-start">
+            <div className="flex items-center gap-2 text-base font-black text-zinc-900 border-b border-zinc-100 pb-3">
+              <svg className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Petunjuk Foto</span>
+            </div>
+
             {/* Poin 1 */}
-            <div className="flex items-start gap-4">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-zinc-900 shadow-2xs">
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="flex items-start gap-3.5 sm:gap-4">
+              <div className="flex h-12 w-12 sm:h-13 sm:w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-zinc-900 shadow-2xs">
+                <svg className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <div>
-                <h4 className="text-base sm:text-lg font-black text-zinc-900">
+                <h4 className="text-base sm:text-lg font-black text-zinc-900 leading-snug">
                   Berdiri di depan kamera
                 </h4>
                 <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1 leading-relaxed">
@@ -215,16 +221,16 @@ export const CameraCaptureScreen: React.FC = () => {
             </div>
 
             {/* Poin 2 */}
-            <div className="flex items-start gap-4">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-zinc-900 shadow-2xs">
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="flex items-start gap-3.5 sm:gap-4">
+              <div className="flex h-12 w-12 sm:h-13 sm:w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-zinc-900 shadow-2xs">
+                <svg className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <circle cx="12" cy="12" r="9" />
                   <path strokeLinecap="round" d="M9 10h.01M15 10h.01" strokeWidth={3} />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 14c1.5 2 6.5 2 8 0" strokeWidth={2.2} />
                 </svg>
               </div>
               <div>
-                <h4 className="text-base sm:text-lg font-black text-zinc-900">
+                <h4 className="text-base sm:text-lg font-black text-zinc-900 leading-snug">
                   Tersenyum!
                 </h4>
                 <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1 leading-relaxed">
@@ -234,15 +240,15 @@ export const CameraCaptureScreen: React.FC = () => {
             </div>
 
             {/* Poin 3 */}
-            <div className="flex items-start gap-4">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-zinc-900 shadow-2xs">
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="flex items-start gap-3.5 sm:gap-4">
+              <div className="flex h-12 w-12 sm:h-13 sm:w-13 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-zinc-900 shadow-2xs">
+                <svg className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   <circle cx="12" cy="13" r="3" />
                 </svg>
               </div>
               <div>
-                <h4 className="text-base sm:text-lg font-black text-zinc-900">
+                <h4 className="text-base sm:text-lg font-black text-zinc-900 leading-snug">
                   Tekan tombol untuk mulai
                 </h4>
                 <p className="text-xs sm:text-sm text-zinc-500 font-medium mt-1 leading-relaxed">
@@ -252,10 +258,10 @@ export const CameraCaptureScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Kolom Tengah: Camera Viewfinder & Shutter (6 cols) */}
+          {/* Kolom Tengah: Camera Viewfinder & Shutter (6 cols - Ekstra Lebar & Besar) */}
           <div className="lg:col-span-6 flex flex-col items-center justify-center">
             {/* Viewfinder Frame dengan Siku Kuning & Controls Overlay */}
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-3xl border-3 border-amber-300 bg-black shadow-2xl">
+            <div className="relative aspect-[16/9.5] w-full overflow-hidden rounded-3xl border-4 border-amber-300 bg-black shadow-2xl">
               {/* Siku Kuning Kiri Atas */}
               <div className="absolute top-4 left-4 z-20 h-10 w-10 border-t-4 border-l-4 border-amber-400 rounded-tl-sm pointer-events-none" />
               {/* Siku Kuning Kanan Atas */}
@@ -360,7 +366,7 @@ export const CameraCaptureScreen: React.FC = () => {
             </div>
 
             {/* Tombol Shutter Jepret Kamera di Luar Layar Kamera */}
-            <div className="relative mt-6 flex items-center justify-center">
+            <div className="relative mt-3.5 sm:mt-4 flex items-center justify-center">
               {/* Doodle Sinar Kiri */}
               <div className="pointer-events-none absolute -left-16 text-amber-500">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
@@ -374,7 +380,7 @@ export const CameraCaptureScreen: React.FC = () => {
               <button
                 onClick={startCountdown}
                 disabled={countdown !== null}
-                className="group flex h-24 w-24 sm:h-26 sm:w-26 items-center justify-center rounded-full bg-amber-400 p-2 shadow-2xl transition-all hover:scale-105 hover:bg-amber-500 active:scale-95 cursor-pointer disabled:opacity-50"
+                className="group flex h-22 w-22 sm:h-25 sm:w-25 items-center justify-center rounded-full bg-amber-400 p-2 shadow-2xl transition-all hover:scale-105 hover:bg-amber-500 active:scale-95 cursor-pointer disabled:opacity-50"
                 title="Ambil Foto"
               >
                 <div className="flex h-full w-full items-center justify-center rounded-full border-4 border-white">
@@ -397,8 +403,8 @@ export const CameraCaptureScreen: React.FC = () => {
           </div>
 
           {/* Kolom Kanan: Hasil Foto (3 cols) */}
-          <div className="lg:col-span-3 rounded-3xl bg-white p-6 sm:p-7 border border-zinc-200/80 shadow-sm space-y-4 flex flex-col justify-start">
-            <div className="flex items-center gap-2 text-base font-black text-zinc-900 border-b border-zinc-100 pb-3.5">
+          <div className="lg:col-span-3 rounded-3xl bg-white p-5 sm:p-6 border border-zinc-200/80 shadow-md space-y-4 flex flex-col justify-start">
+            <div className="flex items-center gap-2 text-base font-black text-zinc-900 border-b border-zinc-100 pb-3">
               <svg className="h-5 w-5 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth={2} />
                 <circle cx="8.5" cy="8.5" r="1.5" />
@@ -408,7 +414,7 @@ export const CameraCaptureScreen: React.FC = () => {
             </div>
 
             {/* List Slot Foto */}
-            <div className="space-y-3.5">
+            <div className="space-y-3">
               {Array.from({ length: totalPhotosNeeded }).map((_, idx) => {
                 const photo = capturedPhotos[idx];
                 const isCurrent = idx === currentPhotoIndex;

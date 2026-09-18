@@ -8,6 +8,7 @@ import { useKioskStore } from '../store/kioskStore';
  */
 export const SessionCountdown: React.FC = () => {
   const sessionDeadline = useKioskStore((s) => s.sessionDeadline);
+  const timerExpired = useKioskStore((s) => s.timerExpired);
   const [, forceTick] = useState(0);
 
   useEffect(() => {
@@ -15,10 +16,25 @@ export const SessionCountdown: React.FC = () => {
     return () => clearInterval(t);
   }, []);
 
-  if (!sessionDeadline) return null;
+  if (!sessionDeadline && !timerExpired) return null;
 
-  const remainingMs = sessionDeadline - Date.now();
-  if (remainingMs <= 0) return null;
+  const remainingMs = sessionDeadline ? sessionDeadline - Date.now() : 0;
+  const isExpired = timerExpired || (sessionDeadline !== null && remainingMs <= 0);
+
+  if (isExpired) {
+    return (
+      <div className="flex items-center gap-2 rounded-full border-2 border-red-300 bg-red-50 px-4 py-1 text-red-600 shadow-2xs">
+        <svg className="h-4 w-4 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-red-400">SISA:</span>
+          <span className="font-mono text-sm font-black tracking-wider text-red-600">00:00</span>
+          <span className="text-[10px] font-extrabold text-red-500">(HABIS)</span>
+        </div>
+      </div>
+    );
+  }
 
   const totalSeconds = Math.ceil(remainingMs / 1000);
   const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
@@ -27,18 +43,18 @@ export const SessionCountdown: React.FC = () => {
 
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-full border-2 px-5 py-2 shadow-md transition-colors ${
+      className={`flex items-center gap-2 rounded-full border-2 px-4 py-1 shadow-2xs transition-colors ${
         isLow
           ? 'border-red-400 bg-red-50 text-red-600 animate-pulse'
           : 'border-amber-400/90 bg-white text-zinc-800'
       }`}
     >
-      <svg className="h-5 w-5 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <div className="flex items-center gap-2">
-        <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-400">SISA:</span>
-        <span className="font-mono text-base sm:text-lg font-black tracking-wider text-zinc-900">
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-400">SISA:</span>
+        <span className="font-mono text-sm font-black tracking-wider text-zinc-900">
           {mm}:{ss}
         </span>
       </div>
