@@ -7,8 +7,10 @@ interface SlotEditorProps {
   width: number;
   height: number;
   slots: FrameSlot[];
+  selectedSlotIndex: number;
+  onSelectChange: (index: number) => void;
+  keepRatio: boolean;
   onChange: (slots: FrameSlot[]) => void;
-  onSelectChange?: (index: number) => void;
   onDuplicate?: () => void;
 }
 
@@ -25,61 +27,9 @@ const getSlotIndex = (el: any): number => {
 /* ─── live readout type ──────────────────────────────── */
 interface LiveInfo { i: number; x: number; y: number; w: number; h: number; rot: number; radius: number }
 
-/* ─── numeric input (nilai diketik bebas, commit saat blur/Enter) ─── */
-interface NumInputProps {
-  label: string;
-  value: number;
-  onCommit: (v: number) => void;
-  min?: number;
-  max?: number;
-  suffix?: string;
-  disabled?: boolean;
-  width?: string;
-}
-
-const NumInput: React.FC<NumInputProps> = ({
-  label, value, onCommit, min, max, suffix, disabled, width = 'w-20',
+export const SlotEditor: React.FC<SlotEditorProps> = ({ 
+  width, height, slots, selectedSlotIndex: selected, onSelectChange: setSelected, keepRatio, onChange, onDuplicate 
 }) => {
-  const [text, setText] = useState(String(value));
-
-  useEffect(() => {
-    setText(String(value));
-  }, [value]);
-
-  const commit = () => {
-    let v = Number(text);
-    if (!Number.isFinite(v)) {
-      setText(String(value));
-      return;
-    }
-    v = Math.round(v);
-    if (min !== undefined) v = Math.max(min, v);
-    if (max !== undefined) v = Math.min(max, v);
-    setText(String(v));
-    onCommit(v);
-  };
-
-  return (
-    <label className={`flex items-center gap-1.5 text-[11px] text-zinc-400 ${disabled ? 'opacity-40' : ''}`}>
-      <span className="whitespace-nowrap">{label}</span>
-      <input
-        type="number"
-        value={text}
-        disabled={disabled}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-        className={`${width} rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-200 outline-none focus:border-indigo-500 disabled:opacity-40`}
-      />
-      {suffix && <span className="text-[10px] text-zinc-500">{suffix}</span>}
-    </label>
-  );
-};
-
-/* ─── component ─────────────────────────────────────── */
-export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, onChange, onSelectChange, onDuplicate }) => {
-  const [selected, setSelected] = useState(-1);
-  const [keepRatio, setKeepRatio] = useState(true);
 
   /* ── live readout (update tiap frame tanpa mengubah slots[]) ── */
   const [liveInfo, setLiveInfo] = useState<LiveInfo | null>(null);
@@ -108,40 +58,90 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
     width: number; height: number; bt: number[]; raf: number;
   }>({ i: -1, startX: 0, startY: 0, sizeW: 0, sizeH: 0, width: 0, height: 0, bt: [0, 0], raf: 0 });
 
-  /* ── preview / sidebar scales ─────────────────────── */
-  const MAX_PREVIEW_W = 460;
-  const MAX_PREVIEW_H = 520;
-  const scale = Math.min(MAX_PREVIEW_W / (width || 1), MAX_PREVIEW_H / (height || 1), 2);
+  /* ── container size measurement ─────────────────────── */
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ w: 460, h: 520 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width: cw, height: ch } = entry.contentRect;
+        if (cw > 0 && ch > 0) setContainerSize({ w: cw, h: ch });
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /* ── preview scales (fit canvas inside container) ──── */
+  const PAD = 24; // padding inside the container
+  const maxW = containerSize.w - PAD * 2;
+  const maxH = containerSize.h - PAD * 2;
+  const scale = Math.min(maxW / (width || 1), maxH / (height || 1), 2);
   const pWidth  = Math.max(4, Math.round((width  || 1) * scale));
   const pHeight = Math.max(4, Math.round((height || 1) * scale));
 
-  const SIDE_MAX = 220;
-  const sideScale = Math.min(SIDE_MAX / (width || 1), SIDE_MAX / (height || 1), 0.8);
-  const sideW = Math.round((width  || 1) * sideScale);
-  const sideH = Math.round((height || 1) * sideScale);
-
   useEffect(() => {
     if (selected >= 0 && selected >= slots.length) setSelected(-1);
-  }, [selected, slots.length]);
+  }, [selected, slots.length, setSelected]);
 
-  /* ── sync selection ke parent (untuk tombol Duplicate) ── */
-  useEffect(() => {
-    onSelectChange?.(selected);
-  }, [selected, onSelectChange]);
+  /* ── arrow key move state ────────────────────────────── */
+  const [isArrowMoving, setIsArrowMoving] = useState(false);
+  const arrowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* ── shortcut keyboard: D = duplikat slot terpilih ── */
+  /* ── shortcut keyboard: D = duplikat, Arrow keys = geser slot ── */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      // D = duplicate
       if (e.key.toLowerCase() === 'd' && selected >= 0) {
         e.preventDefault();
         onDuplicate?.();
+        return;
       }
+
+      // Arrow keys = move selected slot
+      if (selected < 0) return;
+      const s = slots[selected];
+      if (!s) return;
+
+      const step = e.shiftKey ? 10 : 1;
+      let dx = 0, dy = 0;
+
+      switch (e.key) {
+        case 'ArrowUp':    dy = -step; break;
+        case 'ArrowDown':  dy = step;  break;
+        case 'ArrowLeft':  dx = -step; break;
+        case 'ArrowRight': dx = step;  break;
+        default: return;
+      }
+
+      e.preventDefault();
+      setIsArrowMoving(true);
+
+      // Clear previous debounce timer
+      if (arrowTimerRef.current) clearTimeout(arrowTimerRef.current);
+      arrowTimerRef.current = setTimeout(() => {
+        setIsArrowMoving(false);
+        clearLive();
+      }, 300);
+
+      const newX = clamp(s.x + dx, 0, Math.max(0, width - s.width));
+      const newY = clamp(s.y + dy, 0, Math.max(0, height - s.height));
+
+      // Push liveInfo so snap guides appear
+      pushLive({ i: selected, x: newX, y: newY, w: s.width, h: s.height, rot: s.rotation || 0, radius: s.radius ?? 10 });
+
+      onChange(slots.map((sl, i) => i === selected ? { ...sl, x: newX, y: newY } : sl));
     };
+
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, onDuplicate]);
+  }, [selected, slots, width, height, onChange, onDuplicate, pushLive, clearLive]);
 
   /* ── imperative highlight (tanpa re-render) ───────── */
   const setVisual = (idx: number) => {
@@ -187,6 +187,13 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
     st.lastBT = e.beforeTranslate || [0, 0];
     const s = slots[st.i];
     if (!s) return;
+
+    // Let Moveable handle visual movement via transform
+    const el = e.target as HTMLElement;
+    if (el && e.transform) {
+      el.style.transform = e.transform;
+    }
+
     const [btX, btY] = st.lastBT;
     const nxPx = clamp(st.left + btX, 0, Math.max(0, pWidth  - s.width  * scale));
     const nyPx = clamp(st.top  + btY, 0, Math.max(0, pHeight - s.height * scale));
@@ -203,6 +210,7 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
     const nyPx = clamp(st.top  + btY, 0, Math.max(0, pHeight - s.height * scale));
     if (s) {
       updateSlot(i, { x: round(nxPx / scale), y: round(nyPx / scale) });
+      // Commit final position to left/top, reset transform to rotation-only
       const el = slotRefs.current[i];
       if (el) {
         el.style.left = `${nxPx}px`;
@@ -347,11 +355,10 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
       ? { i: selected, x: selectedSlot.x, y: selectedSlot.y, w: selectedSlot.width, h: selectedSlot.height, rot: selectedSlot.rotation || 0, radius: selectedSlot.radius ?? 10 }
       : null;
 
-  /* ── panduan tengah (muncul saat drag mendekati tengah kanvas) ── */
-  // liveInfo dalam ukuran kanvas aktual (px @frame), bandingkan dengan pusat kanvas aktual.
+  /* ── panduan tengah & slot-to-slot (muncul saat drag/arrow key) ── */
   const cw = width || 1;
   const ch = height || 1;
-  const centerTol = 6 / Math.max(0.001, scale); // ~6px tampilan, dikonversi ke px aktual
+  const centerTol = 6 / Math.max(0.001, scale);
   const guideX = liveInfo
     ? Math.abs(liveInfo.x + liveInfo.w / 2 - cw / 2) <= centerTol
     : false;
@@ -359,11 +366,44 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
     ? Math.abs(liveInfo.y + liveInfo.h / 2 - ch / 2) <= centerTol
     : false;
 
+  /* ── slot-to-slot snap guides (hanya saat arrow key / drag) ── */
+  const slotGuides: { type: 'h' | 'v'; pos: number }[] = [];
+  if (liveInfo && selected >= 0) {
+    const tol = centerTol;
+    const me = liveInfo;
+    const meCx = me.x + me.w / 2;
+    const meCy = me.y + me.h / 2;
+    const meRight = me.x + me.w;
+    const meBottom = me.y + me.h;
+
+    slots.forEach((other, j) => {
+      if (j === selected) return;
+      const oCx = other.x + other.width / 2;
+      const oCy = other.y + other.height / 2;
+      const oRight = other.x + other.width;
+      const oBottom = other.y + other.height;
+
+      // Horizontal guides (same Y values)
+      if (Math.abs(me.y - other.y) <= tol)        slotGuides.push({ type: 'h', pos: other.y });
+      if (Math.abs(meBottom - oBottom) <= tol)     slotGuides.push({ type: 'h', pos: oBottom });
+      if (Math.abs(me.y - oBottom) <= tol)         slotGuides.push({ type: 'h', pos: oBottom });
+      if (Math.abs(meBottom - other.y) <= tol)     slotGuides.push({ type: 'h', pos: other.y });
+      if (Math.abs(meCy - oCy) <= tol)             slotGuides.push({ type: 'h', pos: oCy });
+
+      // Vertical guides (same X values)
+      if (Math.abs(me.x - other.x) <= tol)        slotGuides.push({ type: 'v', pos: other.x });
+      if (Math.abs(meRight - oRight) <= tol)       slotGuides.push({ type: 'v', pos: oRight });
+      if (Math.abs(me.x - oRight) <= tol)          slotGuides.push({ type: 'v', pos: oRight });
+      if (Math.abs(meRight - other.x) <= tol)      slotGuides.push({ type: 'v', pos: other.x });
+      if (Math.abs(meCx - oCx) <= tol)             slotGuides.push({ type: 'v', pos: oCx });
+    });
+  }
+
   /* ================================================================
      JSX
      ================================================================ */
   return (
-    <div className="slot-editor">
+    <div ref={containerRef} className="slot-editor w-full h-full flex flex-col items-center justify-center">
       <style>{`
         .slot-editor .slot-active {
           z-index: 20 !important;
@@ -374,103 +414,8 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
         .slot-editor .moveable-control { border-radius: 50%; }
       `}</style>
 
-      {/* ── chip bar + toolbar ───────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-1.5">
-          {slots.length === 0 && (
-            <span className="text-[11px] text-zinc-500">Belum ada slot.</span>
-          )}
-          {slots.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => handleSelect(i)}
-              className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold transition ${
-                selected === i ? 'bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
-              }`}
-            >
-              Pose {i + 1}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-zinc-400">
-            <input type="checkbox" checked={keepRatio} onChange={(e) => setKeepRatio(e.target.checked)} className="accent-indigo-500" />
-            Kunci Rasio
-          </label>
-
-          <button
-            type="button"
-            disabled={selected < 0 || !selectedSlot?.rotation}
-            onClick={() => selected >= 0 && updateSlot(selected, { rotation: 0 })}
-            className="rounded-lg bg-zinc-800 px-2.5 py-1 text-[10px] font-semibold text-zinc-300 transition hover:bg-zinc-700 disabled:opacity-40"
-          >
-            ↺ Reset Rotasi
-          </button>
-        </div>
-      </div>
-
-      {/* ── inspector: posisi & ukuran slot (diketik manual) ── */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-zinc-800 bg-zinc-900/40 px-3 py-2">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">Posisi &amp; Ukuran</span>
-        <NumInput
-          label="X"
-          value={selectedSlot?.x ?? 0}
-          min={0}
-          max={Math.max(0, width - (selectedSlot?.width ?? 0))}
-          disabled={selected < 0}
-          onCommit={(v) => selected >= 0 && updateSlot(selected, { x: v })}
-        />
-        <NumInput
-          label="Y"
-          value={selectedSlot?.y ?? 0}
-          min={0}
-          max={Math.max(0, height - (selectedSlot?.height ?? 0))}
-          disabled={selected < 0}
-          onCommit={(v) => selected >= 0 && updateSlot(selected, { y: v })}
-        />
-        <NumInput
-          label="Lebar"
-          value={selectedSlot?.width ?? 0}
-          min={MIN_SLOT}
-          max={Math.max(MIN_SLOT, width)}
-          disabled={selected < 0}
-          suffix="px"
-          onCommit={(v) => selected >= 0 && updateSlot(selected, { width: v })}
-        />
-        <NumInput
-          label="Tinggi"
-          value={selectedSlot?.height ?? 0}
-          min={MIN_SLOT}
-          max={Math.max(MIN_SLOT, height)}
-          disabled={selected < 0}
-          suffix="px"
-          onCommit={(v) => selected >= 0 && updateSlot(selected, { height: v })}
-        />
-        <NumInput
-          label="Rotasi"
-          value={selectedSlot?.rotation ?? 0}
-          min={-360}
-          max={360}
-          disabled={selected < 0}
-          suffix="°"
-          onCommit={(v) => selected >= 0 && updateSlot(selected, { rotation: v })}
-        />
-        <NumInput
-          label="Radius"
-          value={selectedSlot?.radius ?? 10}
-          min={0}
-          max={999}
-          disabled={selected < 0}
-          suffix="px"
-          onCommit={(v) => selected >= 0 && updateSlot(selected, { radius: v })}
-        />
-      </div>
-
-      {/* ── canvas + sidebar preview ─────────────────── */}
-      <div className="mt-3 flex justify-center gap-4 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-        {/* main canvas */}
+      {/* ── canvas ─────────────────── */}
+      <div className="flex justify-center rounded-xl border border-zinc-800 bg-zinc-950 p-3 shadow-xl max-w-full overflow-hidden relative">
         <div
           className="relative shrink-0 overflow-hidden rounded-lg border border-zinc-700 shadow-inner"
           style={{
@@ -498,6 +443,23 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
             </div>
           )}
 
+          {/* slot-to-slot alignment guides (green) */}
+          {slotGuides.map((g, gi) => (
+            g.type === 'h' ? (
+              <div
+                key={`sg-${gi}`}
+                className="pointer-events-none absolute z-[14] h-px bg-emerald-400/80 shadow-[0_0_4px_rgba(52,211,153,0.6)]"
+                style={{ left: 0, right: 0, top: g.pos * scale }}
+              />
+            ) : (
+              <div
+                key={`sg-${gi}`}
+                className="pointer-events-none absolute z-[14] w-px bg-emerald-400/80 shadow-[0_0_4px_rgba(52,211,153,0.6)]"
+                style={{ top: 0, bottom: 0, left: g.pos * scale }}
+              />
+            )
+          ))}
+
           {slots.map((s, i) => (
             <Fragment key={i}>
               <div
@@ -520,12 +482,24 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
                 </span>
               </div>
 
+              {/* Hide Moveable controls during arrow key movement to prevent ghost */}
+              {!isArrowMoving && (
               <Moveable
                 target={`[data-slot-index="${i}"]`}
                 draggable
                 resizable={selected === i}
                 rotatable={selected === i}
                 keepRatio={keepRatio}
+                snappable
+                snapThreshold={8}
+                elementGuidelines={
+                  slots.map((_, j) => j !== i ? `[data-slot-index="${j}"]` : null).filter(Boolean) as string[]
+                }
+                horizontalGuidelines={[pHeight / 2]}
+                verticalGuidelines={[pWidth / 2]}
+                isDisplaySnapDigit={false}
+                snapDirections={{ top: true, bottom: true, left: true, right: true, center: true, middle: true }}
+                elementSnapDirections={{ top: true, bottom: true, left: true, right: true, center: true, middle: true }}
                 renderDirections={['nw','n','ne','e','se','s','sw','w']}
                 hideDefaultLines={selected !== i}
                 throttleDrag={0}
@@ -544,39 +518,10 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({ width, height, slots, on
                 onRotateStart={onRotateStart}
                 onRotate={onRotate}
                 onRotateEnd={onRotateEnd}
-                className="snap-none"
               />
+              )}
             </Fragment>
           ))}
-        </div>
-
-        {/* ── sidebar : preview hasil cetak ──────────── */}
-        <div className="flex w-28 shrink-0 flex-col items-center gap-2 py-1">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">Hasil Cetak</span>
-          <div className="flex items-center justify-center rounded-lg bg-zinc-900/60 p-2">
-            <div
-              className="relative overflow-hidden rounded border border-zinc-600 bg-zinc-800"
-              style={{ width: sideW, height: sideH }}
-            >
-              {slots.map((s, i) => {
-                const live = liveInfo && liveInfo.i === i ? liveInfo : null;
-                return (
-                  <div
-                    key={i}
-                    className="absolute bg-indigo-400/20 ring-1 ring-inset ring-indigo-400/30"
-                    style={{
-                      left:   (live?.x ?? s.x) * sideScale,
-                      top:    (live?.y ?? s.y) * sideScale,
-                      width:  (live?.w ?? s.width) * sideScale,
-                      height: (live?.h ?? s.height) * sideScale,
-                      borderRadius: (live?.radius ?? s.radius ?? 10) * sideScale,
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-          <span className="font-mono text-[10px] text-zinc-500">{width} × {height} px</span>
         </div>
       </div>
 

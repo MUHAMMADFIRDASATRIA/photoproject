@@ -12,6 +12,58 @@ import {
   autoLayoutSlots,
 } from '../../lib/frames';
 
+/* ─── numeric input (nilai diketik bebas, commit saat blur/Enter) ─── */
+interface NumInputProps {
+  label: string;
+  value: number;
+  onCommit: (v: number) => void;
+  min?: number;
+  max?: number;
+  suffix?: string;
+  disabled?: boolean;
+  width?: string;
+}
+
+const NumInput: React.FC<NumInputProps> = ({
+  label, value, onCommit, min, max, suffix, disabled, width = 'w-20',
+}) => {
+  const [text, setText] = useState(String(value));
+
+  useEffect(() => {
+    setText(String(value));
+  }, [value]);
+
+  const commit = () => {
+    let v = Number(text);
+    if (!Number.isFinite(v)) {
+      setText(String(value));
+      return;
+    }
+    v = Math.round(v);
+    if (min !== undefined) v = Math.max(min, v);
+    if (max !== undefined) v = Math.min(max, v);
+    setText(String(v));
+    onCommit(v);
+  };
+
+  return (
+    <label className={`flex items-center gap-1.5 text-[11px] text-zinc-400 ${disabled ? 'opacity-40' : ''}`}>
+      <span className="whitespace-nowrap">{label}</span>
+      <input
+        type="number"
+        value={text}
+        disabled={disabled}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+        className={`${width} rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-200 outline-none focus:border-indigo-500 disabled:opacity-40`}
+      />
+      {suffix && <span className="text-[10px] text-zinc-500">{suffix}</span>}
+    </label>
+  );
+};
+
+
 interface BranchOption {
   id: number;
   name: string;
@@ -55,6 +107,7 @@ export const FrameFormPage: React.FC = () => {
   });
   const [selectedPresetId, setSelectedPresetId] = useState<string>('custom');
   const [selectedSlotIndex, setSelectedSlotIndex] = useState(-1);
+  const [keepRatio, setKeepRatio] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -175,6 +228,16 @@ export const FrameFormPage: React.FC = () => {
     });
   };
 
+  const updateSlot = (index: number, patch: Partial<FrameSlot>) => {
+    setFormData((prev) => {
+      const slots = [...prev.slotsConfig];
+      if (slots[index]) {
+        slots[index] = { ...slots[index], ...patch };
+      }
+      return { ...prev, slotsConfig: slots };
+    });
+  };
+
   const removeSlot = () => {
     setFormData((prev) => {
       if (prev.slotsConfig.length <= 1) return prev;
@@ -226,10 +289,12 @@ export const FrameFormPage: React.FC = () => {
     );
   }
 
+  const selectedSlot = selectedSlotIndex >= 0 ? formData.slotsConfig[selectedSlotIndex] : undefined;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col h-[calc(100vh-6rem)]">
+      {/* Header Full Width */}
+      <div className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
             {isEdit ? 'Edit Master Frame' : 'Tambah Master Frame Baru'}
@@ -238,22 +303,89 @@ export const FrameFormPage: React.FC = () => {
             Kelola tipe fisik frame/grid, dimensi cetak, jumlah pose foto, penetapan harga transaksi, serta relasi ke cabang.
           </p>
         </div>
-        <Link
-          to="/frames"
-          className="inline-flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700"
-        >
-          ← Kembali ke Daftar
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            to="/frames"
+            className="inline-flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700"
+          >
+            ← Kembali
+          </Link>
+          <button
+            type="button"
+            onClick={submitFrame}
+            disabled={isSubmitting || (isEdit ? false : !canCreate)}
+            className="inline-flex items-center rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 disabled:opacity-50"
+          >
+            {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+          </button>
+        </div>
       </div>
 
       {!isEdit && !canCreate && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300 mb-4">
           Anda tidak memiliki izin untuk membuat frame baru.
         </div>
       )}
 
-      <form onSubmit={submitFrame} className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-xl shadow-black/10">
-        {errorMsg && <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">{errorMsg}</div>}
+      {/* Split Panel Layout */}
+      <div className="flex flex-1 gap-6 min-h-0 overflow-hidden lg:flex-row flex-col">
+        
+        {/* PANEL KIRI (Canvas) */}
+        <div className="flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-xl shadow-black/10 lg:w-[45%] w-full h-full overflow-hidden">
+          <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 bg-zinc-950/30">
+            <h2 className="text-sm font-bold text-zinc-300 flex items-center gap-2">
+              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Editor Slot Foto
+            </h2>
+            <div className="rounded-full bg-indigo-500/10 px-2.5 py-1 text-[10px] font-bold text-indigo-400 border border-indigo-500/20">
+              Ukuran Cetak: {formData.width} × {formData.height}
+            </div>
+          </div>
+          <div className="flex-1 p-4 bg-zinc-950/50 flex flex-col items-center justify-center min-h-0 overflow-hidden relative">
+            <SlotEditor
+              width={formData.width}
+              height={formData.height}
+              slots={formData.slotsConfig}
+              selectedSlotIndex={selectedSlotIndex}
+              onSelectChange={setSelectedSlotIndex}
+              keepRatio={keepRatio}
+              onDuplicate={() => selectedSlotIndex >= 0 && duplicateSlot(selectedSlotIndex)}
+              onChange={(slots) => setFormData((prev) => ({ ...prev, slotsConfig: slots }))}
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-zinc-800 px-6 py-3 bg-zinc-950/80">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Orientasi</span>
+              <span className="text-xs font-semibold text-zinc-300">{formData.height >= formData.width ? 'Portrait' : 'Landscape'}</span>
+            </div>
+            <div className="h-6 w-px bg-zinc-800"></div>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Ukuran</span>
+              <span className="text-xs font-semibold text-zinc-300">{formData.width} × {formData.height} px</span>
+            </div>
+            <div className="h-6 w-px bg-zinc-800"></div>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Rasio</span>
+              <span className="text-xs font-semibold text-zinc-300">
+                {(formData.width / Math.min(formData.width, formData.height)).toFixed(1)} : {(formData.height / Math.min(formData.width, formData.height)).toFixed(1)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* PANEL KANAN (Form) */}
+        <div className="lg:w-[55%] w-full flex flex-col h-full overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+          <form id="frame-form" onSubmit={submitFrame} className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-xl shadow-black/10">
+            {errorMsg && <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">{errorMsg}</div>}
+
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-sm font-bold text-white">Informasi Frame</h3>
+            </div>
 
         {/* Preset Template Selector (saat membuat frame baru) */}
         {!isEdit && (
@@ -375,24 +507,32 @@ export const FrameFormPage: React.FC = () => {
         </div>
 
         {/* Editor Slot Foto */}
-        <div className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-950/40 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <label className="text-xs font-bold text-zinc-300">
-              Pengaturan Slot Foto
-              <span className="block text-[10px] font-normal text-zinc-500">Klik slot di kanvas lalu tarik / resize / rotasi. Nilai tersimpan otomatis (px @frame aktual).</span>
-            </label>
-            <div className="flex gap-2">
+        <div className="space-y-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-xl shadow-black/10">
+          <div className="flex items-start gap-3 mb-2">
+            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400">
+              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Pengaturan Slot Foto</h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Atur posisi dan ukuran slot foto pada kanvas di panel kiri. Slot akan muncul sesuai jumlah pose yang dipilih.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={autoArrangeSlots}
-                className="rounded-lg bg-indigo-600/20 px-3 py-1.5 text-[10px] font-semibold text-indigo-300 transition hover:bg-indigo-600/30"
+                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[10px] font-bold text-white transition hover:bg-indigo-500 shadow shadow-indigo-600/20"
               >
-                ⇲ Auto Tata Slot
+                + Auto Tata Slot
               </button>
               <button
                 type="button"
                 onClick={addSlot}
-                className="rounded-lg bg-zinc-800 px-3 py-1.5 text-[10px] font-semibold text-zinc-300 transition hover:bg-zinc-700"
+                className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-[10px] font-semibold text-zinc-300 transition hover:bg-zinc-700"
               >
                 + Slot
               </button>
@@ -400,51 +540,122 @@ export const FrameFormPage: React.FC = () => {
                 type="button"
                 onClick={() => selectedSlotIndex >= 0 && duplicateSlot(selectedSlotIndex)}
                 disabled={selectedSlotIndex < 0}
-                className="rounded-lg bg-violet-600/20 px-3 py-1.5 text-[10px] font-semibold text-violet-300 transition hover:bg-violet-600/30 disabled:opacity-40"
-                title="Duplikat slot terpilih (tekan D)"
+                className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-[10px] font-semibold text-zinc-300 transition hover:bg-zinc-700 disabled:opacity-40"
               >
-                ⧉ Duplicate
+                + Duplikat
               </button>
               <button
                 type="button"
                 onClick={removeSlot}
                 disabled={formData.slotsConfig.length <= 1}
-                className="rounded-lg bg-red-500/10 px-3 py-1.5 text-[10px] font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-40"
+                className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-[10px] font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-40"
               >
-                − Slot
+                − Hapus
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <label className="flex cursor-pointer items-center gap-1.5 text-[11px] font-medium text-zinc-300">
+                <input type="checkbox" checked={keepRatio} onChange={(e) => setKeepRatio(e.target.checked)} className="h-3.5 w-3.5 rounded border-zinc-700 bg-zinc-900 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-zinc-900" />
+                Kunci Rasio
+              </label>
+              <button
+                type="button"
+                disabled={selectedSlotIndex < 0 || !selectedSlot?.rotation}
+                onClick={() => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { rotation: 0 })}
+                className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-[10px] font-semibold text-zinc-300 transition hover:bg-zinc-700 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                Reset Rotasi
               </button>
             </div>
           </div>
-          <SlotEditor
-            width={formData.width}
-            height={formData.height}
-            slots={formData.slotsConfig}
-            onSelectChange={setSelectedSlotIndex}
-            onDuplicate={() => selectedSlotIndex >= 0 && duplicateSlot(selectedSlotIndex)}
-            onChange={(slots) => setFormData((prev) => ({ ...prev, slotsConfig: slots }))}
-          />
-          <p className="text-[10px] text-zinc-500">
-            {formData.photoCount} pose saat ini • {formData.slotsConfig.length} slot terpasang • menambah pose menambah slot, mengurangi pose menghapus slot.
-            <span className="ml-1 text-emerald-500/80">Tekan D atau klik "⧉ Duplicate" untuk menyalin slot terpilih (informasi ukuran/rotasi ikut tersalin).</span>
-          </p>
-        </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
-          <Link
-            to="/frames"
-            className="rounded-xl bg-zinc-800 px-4 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-700"
-          >
-            Batal
-          </Link>
-          <button
-            type="submit"
-            disabled={isSubmitting || (isEdit ? false : !canCreate)}
-            className="rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Master Frame'}
-          </button>
+          <div className="pt-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-3 px-1">Posisi &amp; Ukuran</h4>
+            <div className="flex flex-wrap items-center gap-4 rounded-xl bg-zinc-950/40 p-3">
+              <NumInput
+                label="Rotasi"
+                value={selectedSlot?.rotation ?? 0}
+                min={-360}
+                max={360}
+                disabled={selectedSlotIndex < 0}
+                width="w-14"
+                onCommit={(v) => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { rotation: v })}
+              />
+              <NumInput
+                label="Radius"
+                value={selectedSlot?.radius ?? 10}
+                min={0}
+                max={999}
+                disabled={selectedSlotIndex < 0}
+                width="w-14"
+                onCommit={(v) => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { radius: v })}
+              />
+              <div className="h-4 w-px bg-zinc-800"></div>
+              <NumInput
+                label="Lebar"
+                value={selectedSlot?.width ?? 0}
+                min={20}
+                max={Math.max(20, formData.width)}
+                disabled={selectedSlotIndex < 0}
+                width="w-16"
+                onCommit={(v) => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { width: v })}
+              />
+              <NumInput
+                label="Tinggi"
+                value={selectedSlot?.height ?? 0}
+                min={20}
+                max={Math.max(20, formData.height)}
+                disabled={selectedSlotIndex < 0}
+                width="w-16"
+                onCommit={(v) => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { height: v })}
+              />
+              <div className="h-4 w-px bg-zinc-800"></div>
+              <NumInput
+                label="X"
+                value={selectedSlot?.x ?? 0}
+                min={0}
+                max={Math.max(0, formData.width - (selectedSlot?.width ?? 0))}
+                disabled={selectedSlotIndex < 0}
+                width="w-14"
+                onCommit={(v) => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { x: v })}
+              />
+              <NumInput
+                label="Y"
+                value={selectedSlot?.y ?? 0}
+                min={0}
+                max={Math.max(0, formData.height - (selectedSlot?.height ?? 0))}
+                disabled={selectedSlotIndex < 0}
+                width="w-14"
+                onCommit={(v) => selectedSlotIndex >= 0 && updateSlot(selectedSlotIndex, { y: v })}
+              />
+            </div>
+            
+            <div className="mt-3 flex items-center justify-between px-1">
+              <div className="flex gap-1">
+                {formData.slotsConfig.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedSlotIndex(i)}
+                    className={`rounded-md px-2 py-0.5 text-[9px] font-bold transition ${
+                      selectedSlotIndex === i ? 'bg-indigo-500 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                    }`}
+                  >
+                    Slot {i + 1}
+                  </button>
+                ))}
+              </div>
+              <span className="text-[10px] text-zinc-500">
+                {formData.photoCount} pose • {formData.slotsConfig.length} slot
+              </span>
+            </div>
+          </div>
         </div>
       </form>
+      </div>
     </div>
+  </div>
   );
 };
