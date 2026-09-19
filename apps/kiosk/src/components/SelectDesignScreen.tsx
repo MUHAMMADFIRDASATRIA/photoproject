@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { useKioskStore, DesignItem } from '../store/kioskStore';
+import { useKioskStore } from '../store/kioskStore';
 import { KioskBackground } from './KioskBackground';
 import { KioskHeader } from './KioskHeader';
 import { DesignPreview } from './DesignPreview';
@@ -16,12 +16,9 @@ export const SelectDesignScreen: React.FC = () => {
     selectDesign,
     setStep,
     fetchDesignsForFrame,
-    printCopies,
   } = useKioskStore();
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Drag-to-scroll state
   const isDraggingRef = useRef(false);
@@ -61,27 +58,7 @@ export const SelectDesignScreen: React.FC = () => {
     }
   }, [allDesigns, activeDesignId]);
 
-  // Handler Scroll Horizontal (Panah, Wheel, Drag)
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
-    }
-  };
 
-  useEffect(() => {
-    checkScroll();
-    const el = scrollRef.current;
-    if (el) {
-      el.addEventListener('scroll', checkScroll);
-      window.addEventListener('resize', checkScroll);
-      return () => {
-        el.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
-      };
-    }
-  }, [allDesigns]);
 
   const handleScrollBtn = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;

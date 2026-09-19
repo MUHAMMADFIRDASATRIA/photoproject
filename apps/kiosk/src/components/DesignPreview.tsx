@@ -59,7 +59,7 @@ export const DesignPreview: React.FC<{ frame: FrameItem; design: DesignItem }> =
           const slotW = (s.width / width) * 100;
           const slotH = (s.height / height) * 100;
           const borderW = borderActive
-            ? `${design.slotBorderWidth! * (2 * scale)}px solid ${design.slotBorderColor || '#EF4444'}`
+            ? `${Math.max(1, design.slotBorderWidth! * scale)}px solid ${design.slotBorderColor || '#EF4444'}`
             : '1px solid rgb(113 113 122 / 0.5)';
 
           return (

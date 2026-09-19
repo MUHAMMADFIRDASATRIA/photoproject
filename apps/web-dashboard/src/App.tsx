@@ -9,6 +9,7 @@ import { FramesPage } from './pages/admin/FramesPage';
 import { FrameFormPage } from './pages/admin/FrameFormPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { DesignsPage } from './pages/admin/DesignsPage';
+import { DesignFormPage } from './pages/admin/DesignFormPage';
 import { ActivityLogsPage } from './pages/ActivityLogsPage';
 import { BranchesPage } from './pages/superadmin/BranchesPage';
 import { UsersPage } from './pages/superadmin/UsersPage';
@@ -138,6 +139,26 @@ function App() {
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.DESIGN_VIEW}>
                 <DesignsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Create Design */}
+          <Route
+            path="designs/new"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.DESIGN_CREATE}>
+                <DesignFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Edit Design */}
+          <Route
+            path="designs/:id/edit"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.DESIGN_UPDATE}>
+                <DesignFormPage />
               </ProtectedRoute>
             }
           />

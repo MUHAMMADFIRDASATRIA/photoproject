@@ -405,39 +405,88 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({
   return (
     <div ref={containerRef} className="slot-editor w-full h-full flex flex-col items-center justify-center">
       <style>{`
+        .slot-editor {
+          --canvas-grid-1: #3f3f46;
+          --canvas-grid-2: #27272a;
+        }
+        .theme-light .slot-editor {
+          --canvas-grid-1: #cbd5e1;
+          --canvas-grid-2: #f1f5f9;
+        }
+
+        .slot-editor .slot-box {
+          border: 2px dashed rgba(99, 102, 241, 0.75);
+          background-color: rgba(99, 102, 241, 0.12);
+          transition: border-color 0.15s, background-color 0.15s;
+        }
+        .slot-editor .slot-box:hover {
+          border-color: rgba(99, 102, 241, 0.95);
+          background-color: rgba(99, 102, 241, 0.2);
+        }
         .slot-editor .slot-active {
           z-index: 20 !important;
-          background: rgba(99,102,241,0.18) !important;
-          outline: 2px solid rgba(129,140,248,0.95);
-          outline-offset: 1px;
+          border-style: solid !important;
+          border-color: #6366f1 !important;
+          background-color: rgba(99, 102, 241, 0.22) !important;
+          box-shadow: 0 0 14px rgba(99, 102, 241, 0.45) !important;
         }
-        .slot-editor .moveable-control { border-radius: 50%; }
+        .theme-light .slot-editor .slot-active {
+          box-shadow: 0 0 14px rgba(99, 102, 241, 0.5) !important;
+        }
+
+        .slot-editor .slot-badge {
+          background-color: #6366f1;
+          color: #ffffff !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        }
+
+        .slot-editor .moveable-line {
+          background: #6366f1 !important;
+          height: 2px !important;
+        }
+        .slot-editor .moveable-control {
+          background: #ffffff !important;
+          border: 2px solid #6366f1 !important;
+          border-radius: 50% !important;
+          width: 12px !important;
+          height: 12px !important;
+          margin-left: -6px !important;
+          margin-top: -6px !important;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+        }
+        .slot-editor .moveable-rotation-line {
+          background: #6366f1 !important;
+        }
+        .slot-editor .moveable-rotation-line .moveable-control {
+          background: #6366f1 !important;
+          border: 2px solid #ffffff !important;
+        }
       `}</style>
 
       {/* ── canvas ─────────────────── */}
-      <div className="flex justify-center rounded-xl border border-zinc-800 bg-zinc-950 p-3 shadow-xl max-w-full overflow-hidden relative">
+      <div className="flex justify-center rounded-xl border border-zinc-700/60 bg-zinc-950 p-3 shadow-xl max-w-full overflow-hidden relative">
         <div
-          className="relative shrink-0 overflow-hidden rounded-lg border border-zinc-700 shadow-inner"
+          className="relative shrink-0 overflow-hidden rounded-lg border border-zinc-600/60 shadow-inner"
           style={{
             width: pWidth, height: pHeight,
             backgroundImage:
-              'linear-gradient(45deg,#3f3f46 25%,transparent 25%,transparent 75%,#3f3f46 75%),linear-gradient(45deg,#3f3f46 25%,#27272a 25%,#27272a 75%,#3f3f46 75%)',
+              'linear-gradient(45deg, var(--canvas-grid-1) 25%, transparent 25%, transparent 75%, var(--canvas-grid-1) 75%), linear-gradient(45deg, var(--canvas-grid-1) 25%, var(--canvas-grid-2) 25%, var(--canvas-grid-2) 75%, var(--canvas-grid-1) 75%)',
             backgroundSize: '28px 28px',
-            backgroundPosition: '0 0,14px 14px',
+            backgroundPosition: '0 0, 14px 14px',
           }}
           onMouseDown={() => handleSelect(-1)}
         >
           {/* panduan sumbu tengah kanvas saat slot mendekati pusat */}
           {guideX && (
-            <div className="pointer-events-none absolute inset-y-0 left-1/2 z-[15] -translate-x-1/2 w-px bg-amber-300/80 shadow-[0_0_6px_rgba(252,211,77,0.6)]">
-              <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded bg-amber-400/90 px-1.5 py-0.5 text-[9px] font-bold text-zinc-900 shadow">
+            <div className="pointer-events-none absolute inset-y-0 left-1/2 z-[15] -translate-x-1/2 w-px bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]">
+              <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-slate-900 shadow">
                 ↔ Tengah
               </span>
             </div>
           )}
           {guideY && (
-            <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[15] -translate-y-1/2 h-px bg-amber-300/80 shadow-[0_0_6px_rgba(252,211,77,0.6)]">
-              <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded bg-amber-400/90 px-1.5 py-0.5 text-[9px] font-bold text-zinc-900 shadow">
+            <div className="pointer-events-none absolute inset-x-0 top-1/2 z-[15] -translate-y-1/2 h-px bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]">
+              <span className="absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-slate-900 shadow">
                 ↕ Tengah
               </span>
             </div>
@@ -448,13 +497,13 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({
             g.type === 'h' ? (
               <div
                 key={`sg-${gi}`}
-                className="pointer-events-none absolute z-[14] h-px bg-emerald-400/80 shadow-[0_0_4px_rgba(52,211,153,0.6)]"
+                className="pointer-events-none absolute z-[14] h-px bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.8)]"
                 style={{ left: 0, right: 0, top: g.pos * scale }}
               />
             ) : (
               <div
                 key={`sg-${gi}`}
-                className="pointer-events-none absolute z-[14] w-px bg-emerald-400/80 shadow-[0_0_4px_rgba(52,211,153,0.6)]"
+                className="pointer-events-none absolute z-[14] w-px bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.8)]"
                 style={{ top: 0, bottom: 0, left: g.pos * scale }}
               />
             )
@@ -466,7 +515,9 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({
                 ref={slotRefCb(i)}
                 data-slot-index={i}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="absolute flex cursor-grab touch-none select-none items-center justify-center active:cursor-grabbing bg-white/5 ring-1 ring-inset ring-dashed ring-white/40"
+                className={`absolute flex cursor-grab touch-none select-none items-center justify-center active:cursor-grabbing slot-box ${
+                  selected === i ? 'slot-active' : ''
+                }`}
                 style={{
                   left:   s.x * scale,
                   top:    s.y * scale,
@@ -477,7 +528,7 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({
                   borderRadius: (s.radius ?? 10) * scale,
                 }}
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-800/90 text-[10px] font-bold text-zinc-300">
+                <span className="slot-badge flex h-6 w-6 items-center justify-center rounded-md text-[10px]">
                   {i + 1}
                 </span>
               </div>
@@ -527,8 +578,8 @@ export const SlotEditor: React.FC<SlotEditorProps> = ({
 
       {/* ── readout koordinat (live saat gesture) ────── */}
       {display && (
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-zinc-900/80 px-3 py-2 text-[11px] font-mono text-zinc-400">
-          <span className="font-semibold text-indigo-300">Pose {(display.i ?? selected) + 1}</span>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-zinc-700/60 bg-zinc-900/90 px-3 py-2 text-[11px] font-mono text-zinc-300">
+          <span className="font-bold text-indigo-500">Pose {(display.i ?? selected) + 1}</span>
           <span>X: {display.x}</span>
           <span>Y: {display.y}</span>
           <span>W: {display.w}</span>

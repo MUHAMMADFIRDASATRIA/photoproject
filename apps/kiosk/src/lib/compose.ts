@@ -100,9 +100,9 @@ export async function composePhoto(
 
   // 3. Render foto user di slot-slot
   const slots = frame.slotsConfig || [];
-  // Preview editor desain memakai `slotBorderWidth * (2 * scale)` (scale = 100/min(nilai terkecil frame)),
-  // jadi ketebalan asli di resolusi penuh = slotBorderWidth * 2 agar proporsinya identik di hasil cetak.
-  const slotBorderW = (design.slotBorderWidth ?? 0) * 2;
+  // Preview editor desain memakai `Math.max(1, slotBorderWidth * scale)` untuk CSS,
+  // di hasil komposit resolusi penuh, kita langsung pakai pixel aslinya.
+  const slotBorderW = design.slotBorderWidth ?? 0;
   const slotBorderColor = design.slotBorderColor || null;
 
   const drawSlotBorder = (w: number, h: number, radius: number) => {

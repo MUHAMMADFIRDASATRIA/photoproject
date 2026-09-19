@@ -3,7 +3,6 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useKioskStore } from '../store/kioskStore';
 import { KioskBackground } from './KioskBackground';
 import { KioskHeader } from './KioskHeader';
-import { PolaroidMockup } from './PolaroidMockup';
 import { FrameTemplatePreview } from './FrameTemplatePreview';
 
 export const PaymentScreen: React.FC = () => {
@@ -17,7 +16,6 @@ export const PaymentScreen: React.FC = () => {
   } = useKioskStore();
 
   const [isLoadingTx, setIsLoadingTx] = useState(false);
-  const [countdown, setCountdown] = useState(180);
   const [payError, setPayError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,12 +25,6 @@ export const PaymentScreen: React.FC = () => {
     }
   }, [currentTransaction, createTransaction]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const handleConfirmPay = async () => {
     setPayError(null);
